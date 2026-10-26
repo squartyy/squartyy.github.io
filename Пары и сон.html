@@ -1,0 +1,698 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Пары и сон</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: одна колонка для телефона. Сверху ближайший отбой и подъём, ниже вкладки дней с парами, потом план на неделю и настройки. */
+:root {
+  --bg: #EDF0F7;
+  --surface: #FFFFFF;
+  --ink: #141A2E;
+  --muted: #5A6479;
+  --line: #D8DDEA;
+  --night: #3445BF;
+  --night-soft: #E2E6FB;
+  --dawn: #B85F00;
+  --dawn-soft: #FFEACB;
+  --ok: #1B7F54;
+  --warn: #B3261E;
+  --on-night: #FFFFFF;
+  --f-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+  --f-body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1120; --surface: #161B2F; --ink: #E8EBF6; --muted: #98A1BA; --line: #2A3150;
+    --night: #94A2FF; --night-soft: #222A57; --dawn: #FFB454; --dawn-soft: #3A2A10;
+    --ok: #4CC38A; --warn: #FF8A80; --on-night: #0D1120; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1120; --surface: #161B2F; --ink: #E8EBF6; --muted: #98A1BA; --line: #2A3150;
+  --night: #94A2FF; --night-soft: #222A57; --dawn: #FFB454; --dawn-soft: #3A2A10;
+  --ok: #4CC38A; --warn: #FF8A80; --on-night: #0D1120; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.eyebrow { margin: 0 0 2px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 26px; letter-spacing: -.01em; text-wrap: balance; }
+.weekchip { font-family: var(--f-mono); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); white-space: nowrap; }
+
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.hero-top { margin: 0; color: var(--muted); font-size: 13px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.half { min-width: 0; border-radius: 12px; padding: 12px 14px; }
+.half.bed { background: var(--night-soft); }
+.half.wake { background: var(--dawn-soft); }
+.half .lab { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.half.bed .lab { color: var(--night); }
+.half.wake .lab { color: var(--dawn); }
+.half .big { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 9.5vw, 42px); line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.half.bed .big { color: var(--night); }
+.half.wake .big { color: var(--dawn); }
+.half .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
+.hero-note { margin: 0; font-size: 14px; }
+
+.switch { display: flex; gap: 8px; }
+.switch button { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+.tab { min-width: 0; padding: 8px 0 7px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.tab .d { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tab .n { font-family: var(--f-mono); font-size: 15px; }
+.tab[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--on-night); }
+.tab[aria-pressed="true"] .d { color: inherit; opacity: .8; }
+.tab.today:not([aria-pressed="true"]) { border-color: var(--night); }
+.tab.off:not([aria-pressed="true"]) { opacity: .55; }
+
+.day { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.day-head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.day-head h2::first-letter { text-transform: uppercase; }
+.day-head span { color: var(--muted); font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; grid-template-columns: 62px 1fr; gap: 12px; }
+.card.now { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok); }
+.card.past { opacity: .5; }
+.card.dim { opacity: .55; border-style: dashed; }
+.time { font-family: var(--f-mono); font-size: 14px; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+.time span:last-child { color: var(--muted); }
+.body { min-width: 0; }
+.subj { font-weight: 600; overflow-wrap: anywhere; }
+.meta { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.t { border-color: var(--night); color: var(--night); }
+.chip.warn { border-color: var(--dawn); color: var(--dawn); }
+.chip.live { border-color: var(--ok); color: var(--ok); }
+.gap { margin: 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; color: var(--muted); }
+.skipbtn { align-self: flex-start; margin-top: 4px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; font-size: 13.5px; }
+
+h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { padding-left: 12px; }
+th:last-child, td:last-child { padding-right: 12px; }
+th { font-size: 12px; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+tr.cur td:first-child { color: var(--night); font-weight: 600; }
+td .e { color: var(--dawn); display: block; font-family: var(--f-body); font-size: 11px; line-height: 1.1; }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+summary { cursor: pointer; font-weight: 600; }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; color: var(--muted); }
+.field input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; min-width: 0; font-family: var(--f-mono); }
+.check { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; }
+.reset { grid-column: 1 / -1; justify-self: start; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; }
+footer { font-size: 12.5px; color: var(--muted); }
+.sign { margin: 14px 0 0; font-family: var(--f-display); font-weight: 500; font-size: 13px; color: var(--ink); text-align: center; }
+@media (max-width: 380px) { .pair { grid-template-columns: 1fr; } .form { grid-template-columns: 1fr; } }
+.banner { background: var(--surface); border: 1px solid var(--night); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.banner[hidden] { display: none; }
+.banner p { margin: 0; font-size: 14px; }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.btn.pri { background: var(--night); border-color: var(--night); color: var(--on-night); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.panel h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.panel .hint { margin: 0; font-size: 13px; color: var(--muted); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg .btn { text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.seg .btn small { font-size: 12px; opacity: .8; }
+.mini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
+.mini .lbl { color: var(--muted); }
+.mini .btn { padding: 5px 10px; font-size: 13px; font-family: var(--f-mono); }
+
+.vars { display: flex; flex-direction: column; gap: 8px; }
+.var { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); width: 100%; }
+.var[aria-pressed="true"] { border-color: var(--night); background: var(--night-soft); }
+.var .vt { font-weight: 600; }
+.var .vs { font-size: 12.5px; color: var(--muted); }
+.var .vb { font-family: var(--f-display); font-weight: 700; font-size: 22px; color: var(--night); font-variant-numeric: tabular-nums; }
+.var.weak .vb { color: var(--dawn); }
+
+.night-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.night-row .field { flex: 1 1 130px; }
+.verdict { border-radius: 12px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.verdict b { font-size: 16px; }
+.verdict.good { background: var(--night-soft); }
+.verdict.mid { background: var(--dawn-soft); }
+.verdict.bad { background: var(--dawn-soft); border: 1px solid var(--warn); }
+.verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.switch-line { display: flex; gap: 10px; align-items: center; font-size: 14.5px; }
+
+.tech { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.tech details { padding: 10px 12px; background: var(--bg); border-radius: 12px; }
+.tech summary { font-weight: 600; font-size: 14.5px; }
+.tech ol, .tech ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.tech p { margin: 8px 0 0; font-size: 14px; }
+.brwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0 4px; }
+.brc { width: 150px; height: 150px; border-radius: 50%; background: var(--night-soft); border: 2px solid var(--night); display: flex; flex-direction: column; align-items: center; justify-content: center; transform: scale(.55); transition-property: transform; transition-timing-function: ease-in-out; }
+.brc .ph { font-size: 14px; color: var(--night); }
+.brc .sec { font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--night); font-variant-numeric: tabular-nums; }
+.brsub { font-size: 13px; color: var(--muted); min-height: 1.4em; text-align: center; }
+.cues { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cue { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); }
+.cue .k { font-size: 12px; color: var(--muted); }
+.cue .v { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.subrow { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.subrow + .subrow { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
+.subrow .chip.lab { margin-bottom: 2px; }
+.flag { font-family: var(--f-body); font-size: 11.5px; color: var(--ok); margin-top: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; }
+@media (prefers-reduced-motion: reduce) { .brc { transition-duration: 0s !important; } }
+select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; }
+/* Палитры: светлая версия на :root, тёмная в двух блоках (по системе и по выбору) */
+:root[data-palette="ocean"] { --bg: #E8F3F5; --surface: #FFFFFF; --ink: #0F2A33; --muted: #4F6A73; --line: #CFE0E4; --night: #0B6E80; --night-soft: #D4EDF1; --dawn: #C2410C; --dawn-soft: #FFE6D9; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="ocean"] { --bg: #0A1A1F; --surface: #112A31; --ink: #E3F2F5; --muted: #8FB0B8; --line: #1F4048; --night: #5CD0E6; --night-soft: #14424D; --dawn: #FF9E6B; --dawn-soft: #3F2316; --on-night: #06242B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="ocean"] { --bg: #0A1A1F; --surface: #112A31; --ink: #E3F2F5; --muted: #8FB0B8; --line: #1F4048; --night: #5CD0E6; --night-soft: #14424D; --dawn: #FF9E6B; --dawn-soft: #3F2316; --on-night: #06242B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="forest"] { --bg: #ECF2EA; --surface: #FFFFFF; --ink: #16251A; --muted: #566A5A; --line: #D3DFD0; --night: #2F6B3F; --night-soft: #DCEBDD; --dawn: #A8590A; --dawn-soft: #FBE9CF; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="forest"] { --bg: #0E1710; --surface: #16231A; --ink: #E4F0E6; --muted: #93AB98; --line: #27402D; --night: #8FD19E; --night-soft: #1E3B25; --dawn: #F2B04D; --dawn-soft: #3A2B10; --on-night: #0C2012; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="forest"] { --bg: #0E1710; --surface: #16231A; --ink: #E4F0E6; --muted: #93AB98; --line: #27402D; --night: #8FD19E; --night-soft: #1E3B25; --dawn: #F2B04D; --dawn-soft: #3A2B10; --on-night: #0C2012; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="rose"] { --bg: #F8ECF1; --surface: #FFFFFF; --ink: #2A1520; --muted: #75525F; --line: #EBD3DC; --night: #A8286B; --night-soft: #F7DCEA; --dawn: #B4530F; --dawn-soft: #FFE8D2; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="rose"] { --bg: #1A0D14; --surface: #2A1620; --ink: #F6E6EE; --muted: #BE9AAB; --line: #4A2838; --night: #FF8DC0; --night-soft: #4B1F36; --dawn: #FFB067; --dawn-soft: #432A12; --on-night: #2B0C1B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="rose"] { --bg: #1A0D14; --surface: #2A1620; --ink: #F6E6EE; --muted: #BE9AAB; --line: #4A2838; --night: #FF8DC0; --night-soft: #4B1F36; --dawn: #FFB067; --dawn-soft: #432A12; --on-night: #2B0C1B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="graphite"] { --bg: #EFEFF0; --surface: #FFFFFF; --ink: #1B1C1F; --muted: #66686E; --line: #DADBDE; --night: #2E3138; --night-soft: #E3E4E8; --dawn: #8A6A00; --dawn-soft: #F6EDCB; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+
+.look { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.look summary { font-weight: 600; }
+.look .body-in { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.look .lbl { font-size: 13px; color: var(--muted); margin-bottom: 6px; display: block; }
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pals { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+.swatch { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: left; min-width: 0; }
+.swatch[aria-pressed="true"] { border-color: var(--night); box-shadow: 0 0 0 1px var(--night); }
+.dots { display: inline-flex; flex: none; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface); }
+.dots i + i { margin-left: -6px; }
+</style>
+
+<main class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Группа 10305126 · МСФ</p>
+      <h1>Пары и сон</h1>
+    </div>
+    <span class="weekchip" id="weekchip"></span>
+  </header>
+
+  <details class="look" id="look">
+    <summary>Оформление</summary>
+    <div class="body-in">
+      <div><span class="lbl">Режим</span><div class="seg3" id="theme-seg"></div></div>
+      <div><span class="lbl">Палитра</span><div class="pals" id="pals"></div></div>
+    </div>
+  </details>
+
+  <section class="hero" id="hero" aria-live="polite"></section>
+
+  <section class="panel" id="variants"></section>
+
+  <section class="panel" id="night"></section>
+
+  <section>
+    <div class="switch" id="weekswitch"></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="day" id="day"></div>
+  </section>
+
+  <section>
+    <h3>План на неделю</h3>
+    <div class="tablewrap"><table id="plan"></table></div>
+  </section>
+
+  <section class="panel" id="sleeptips">
+    <h2>Не получается уснуть</h2>
+    <p class="hint">Что сделать до отбоя и что попробовать, если лежите и не спите. Это общие советы, не лечение.</p>
+    <div class="cues" id="cues"></div>
+    <div class="tech">
+      <details id="d-breath">
+        <summary>Дыхание 4-7-8, 4 цикла</summary>
+        <p>Сядьте или лягте удобно. Вдох носом 4 секунды, пауза 7, медленный выдох ртом 8. Если закружится голова, дышите как обычно.</p>
+        <div class="brwrap">
+          <div class="brc" id="brc"><span class="ph" id="brph">Готово</span><span class="sec" id="brsec">4-7-8</span></div>
+          <div class="brsub" id="brsub">Нажмите «Начать» и следите за кругом.</div>
+          <button class="btn pri" id="brbtn" type="button">Начать</button>
+        </div>
+      </details>
+      <details>
+        <summary>Расслабление мышц по очереди</summary>
+        <ol>
+          <li>Лягте на спину. Сожмите стопы на 5 секунд, потом отпустите на 10–15.</li>
+          <li>Так же двигайтесь вверх: голени, бёдра, живот, кисти, плечи.</li>
+          <li>В конце напрягите и расслабьте лицо: брови, челюсть, лоб.</li>
+          <li>Весь круг занимает 10–15 минут. Между группами мышц дышите ровно.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>Слова на выбранную букву</summary>
+        <p>Это способ отвлечь голову от мыслей. Выберите нейтральное слово, например «звезда». На каждую букву придумывайте слова: на «з» это зима, забор, зонт. Представляйте каждое слово несколько секунд и переходите к следующему. Не связывайте слова в историю.</p>
+      </details>
+      <details>
+        <summary>Если лежите больше 20 минут</summary>
+        <ul>
+          <li>Не смотрите на часы и не заставляйте себя заснуть.</li>
+          <li>Встаньте, включите тусклый свет и займитесь чем-то тихим без экрана: книга, растяжка, тёплая вода.</li>
+          <li>Возвращайтесь в кровать, когда начнёт клонить в сон.</li>
+          <li>Кровать только для сна. Игры и телефон лёжа приучают мозг не спать там.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Выгрузить мысли на бумагу</summary>
+        <p>За час до отбоя на 5 минут запишите всё, что крутится в голове: дела на завтра, вопросы, тревоги. Когда это лежит на бумаге, голове проще отпустить.</p>
+      </details>
+      <details>
+        <summary>Когда нужен врач</summary>
+        <p>Если проблемы со сном держатся больше трёх недель или из-за них трудно учиться, стоит обратиться к врачу. Таблетки и добавки без назначения я не советую.</p>
+      </details>
+    </div>
+  </section>
+
+  <details id="settings">
+    <summary>Настройки режима</summary>
+    <div class="form">
+      <div class="field"><label for="f-wake">Подъём в дни без пар</label><input id="f-wake" type="time"></div>
+      <div class="field"><label for="f-sleep">Сколько спать, ч</label><input id="f-sleep" type="number" min="3" max="12" step="0.5"></div>
+      <div class="field"><label for="f-prep">Впритык: за сколько минут до пары</label><input id="f-prep" type="number" min="0" max="240" step="5"></div>
+      <div class="field"><label for="f-fall">Засыпаю за, мин</label><input id="f-fall" type="number" min="0" max="120" step="5"></div>
+      <label class="check"><input id="f-unsure" type="checkbox"><span>Не учитывать пары ОИЗ без дат. Их стоит уточнить у старосты.</span></label>
+      <button class="reset" id="f-reset" type="button">Сбросить настройки</button>
+    </div>
+  </details>
+
+  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппа 1 это левый столбец вашей группы в таблице, подгруппа 2 правый. Подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
+</main>
+
+
+<script>
+const SLOTS = [['09:55','11:30'],['12:00','13:35'],['13:55','15:30'],['15:40','17:15'],['17:45','19:20'],['19:30','21:05']];
+const DAYS = ['пн','вт','ср','чт','пт','сб'];
+const HOLIDAYS = { '2026-11-07': 'День Октябрьской революции' };
+const BASE = Date.UTC(2026, 7, 31);
+// d: день 1-6, s: пара 0-5, w: неделя (0 обе), sub: подгруппа 1 (левая) или 2 (правая), unsure: без подтверждения
+const L = [
+  {d:1,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:1,s:2,w:1,t:'пр',n:'ОИЗ. Инженерная графика',r:'ауд. 510, к. 8',p:'',unsure:1},
+  {d:1,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:1,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
+  {d:1,s:4,w:0,t:'лек',n:'Инженерная графика',r:'ауд. 4п, к. 8',p:'Кулащик Н.Ф.'},
+
+  {d:2,s:1,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
+  {d:2,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 13, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:2},
+  {d:2,s:2,w:0,t:'пр',n:'Инженерная графика',r:'ауд. 507, к. 8',p:''},
+  {d:2,s:3,w:0,t:'лек',n:'Математика',r:'ауд. 2П, к. 17',p:'Крушевский Е.А.'},
+  {d:2,s:4,w:0,t:'лек',n:'Физика',r:'ауд. 2п, к. 17',p:'Бобученко Д.С.'},
+
+  {d:3,s:2,w:0,t:'пр',n:'Физика',r:'ауд. 203, к. 17',p:'Бобученко Д.С.'},
+  {d:3,s:3,w:0,t:'лек',n:'Химия',r:'ауд. 2п, к. 17',p:'Стрелкова Е.В.'},
+  {d:3,s:4,w:1,t:'лек',n:'Информатика',r:'ауд. 2П, к. 17',p:'Кавальчук О.Н.'},
+  {d:3,s:4,w:2,t:'лек',n:'Физика',r:'ауд. 2п, к. 17',p:'Бобученко Д.С.'},
+  {d:3,s:5,w:2,t:'лек',n:'Введение в инженерное образование',r:'ауд. 405, к. 6',p:'преподаватель не назначен',unsure:1},
+
+  {d:4,s:0,w:1,t:'кур',n:'Кураторский / информационный час',r:'ауд. 208, к. 6',p:'Фёдорцев Р.В.'},
+  {d:4,s:1,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.',sub:1},
+  {d:4,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:4,s:2,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.',sub:1},
+  {d:4,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:4,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
+  {d:4,s:4,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
+  {d:4,s:4,w:0,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:2},
+  {d:4,s:5,w:1,t:'пр',n:'ОИЗ. Математика',r:'ауд. 220, к. 6',p:'Тульев В.В.',unsure:1},
+
+  {d:5,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 12, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:1},
+  {d:5,s:1,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:2},
+  {d:5,s:2,w:0,t:'пр',n:'Математика',r:'ауд. 221, к. 6',p:'Доронина А.В.'},
+  {d:5,s:3,w:1,t:'пр',n:'Химия',r:'ауд. 508а, к. 11',p:'Стрелкова Е.В.'},
+  {d:5,s:3,w:2,t:'пр',n:'Инженерная графика',r:'ауд. 511, к. 8',p:''},
+  {d:5,s:4,w:0,t:'пр',n:'Английский язык',r:'ауд. 430, к. 18',p:'Лапко О.А.'},
+
+  {d:6,s:1,w:0,t:'лек',n:'Технология конструкционных материалов',r:'ауд. 4п, к. 8',p:'Мамонов А.М.'},
+  {d:6,s:2,w:1,t:'пр',n:'ОИЗ. Физика',r:'ауд. 201, к. 17',p:'Бобученко Д.С.',unsure:1},
+  {d:6,s:2,w:2,t:'пр',n:'Английский язык',r:'ауд. 430, к. 18',p:'Лапко О.А.'},
+  {d:6,s:3,w:2,t:'пр',n:'Введение в инженерное образование',r:'ауд. 307, к. 6',p:'преподаватель не назначен'}
+];
+const TYPE = { 'лек': 'Лекция', 'пр': 'Практика', 'лаб': 'Лабораторная', 'кур': 'Кураторский час' };
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const dow = d => (d.getDay() + 6) % 7 + 1;
+const mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const hm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+const hmDate = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const dur = m => { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return [h ? h + ' ч' : '', r || !h ? r + ' мин' : ''].filter(Boolean).join(' '); };
+const mondayOf = d => addDays(d, -(dow(d) - 1));
+function weekNo(d) {
+  const m = mondayOf(d);
+  const days = Math.round((Date.UTC(m.getFullYear(), m.getMonth(), m.getDate()) - BASE) / 864e5);
+  return ((Math.floor(days / 7) % 2) + 2) % 2 === 0 ? 1 : 2;
+}
+const fmtDay = d => d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+const cyc = n => n === 1 ? 'цикл' : (n >= 2 && n <= 4 ? 'цикла' : 'циклов');
+const wdayName = d => d.toLocaleDateString('ru-RU', { weekday: 'long' });
+
+const DEF = { pal: 'indigo', theme: 'auto', prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00' };
+let S = { ...DEF };
+let skipped = {};
+try { const j = JSON.parse(localStorage.getItem('rasp-settings')); if (j) S = { ...DEF, ...j }; } catch (e) {}
+try { skipped = JSON.parse(localStorage.getItem('rasp-skipped')) || {}; } catch (e) {}
+S.mode = S.mode === 'late' ? 'late' : 'early';
+if (S.prep === 90) S.prep = 60;
+if (S.wake === '09:00') S.wake = '10:00';
+delete S.sub;
+const save = () => {
+  try { localStorage.setItem('rasp-settings', JSON.stringify(S)); localStorage.setItem('rasp-skipped', JSON.stringify(skipped)); } catch (e) {}
+};
+
+const counted = e => !(e.unsure && S.unsure);
+function classes(d) {
+  const n = dow(d), w = weekNo(d);
+  if (n > 6 || HOLIDAYS[iso(d)] || skipped[iso(d)]) return [];
+  return L.filter(e => e.d === n && (e.w === 0 || e.w === w)).sort((a, b) => a.s - b.s);
+}
+// Подъём зависит от первой пары дня.
+// Впритык: за S.prep минут до пары. Пораньше: за 3 часа до пары, но между 9:00 и 10:00, и не позже чем за 1,5 часа до пары.
+function wakeFor(first, mode) {
+  const f = mins(first);
+  if (mode === 'late') return f - S.prep;
+  return Math.min(Math.max(540, Math.min(600, f - 180)), f - 90);
+}
+function plan(d, mode) {
+  mode = mode || S.mode;
+  const cs = classes(d).filter(counted);
+  let wake = mins(S.wake), first = null, last = null;
+  if (cs.length) {
+    first = SLOTS[cs[0].s][0];
+    last = SLOTS[cs[cs.length - 1].s][1];
+    wake = wakeFor(first, mode);
+  }
+  const bed = wake - S.sleep * 60 - S.fall;
+  return { cs, first, last, wake, bed };
+}
+const at = (d, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, Math.round(m));
+
+let weekOffset = 0;
+let sel = new Date();
+sel = dow(sel) > 6 ? addDays(sel, 1) : sel;
+let ctx = null; // ближайший подъём: { d, p, wakeAt }
+
+function findTarget() {
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let d = today, p = plan(d);
+  for (let i = 0; i < 9; i++) {
+    d = addDays(today, i); p = plan(d);
+    if (at(d, p.wake) > now) break;
+  }
+  ctx = { d, p, wakeAt: at(d, p.wake), now };
+}
+
+function renderHero() {
+  findTarget();
+  const { d, p, wakeAt, now } = ctx;
+  const bedAt = at(d, p.bed);
+  let note;
+  if (now >= bedAt && now < wakeAt) note = 'Отбой был в ' + hm(p.bed) + '. Сейчас пора спать, подъём через ' + dur((wakeAt - now) / 6e4) + '.';
+  else note = 'До отбоя ' + dur((bedAt - now) / 6e4) + '.';
+  const why = p.cs.length
+    ? 'Первая пара ' + p.first + ', подъём ' + (S.mode === 'late' ? 'впритык, за ' + S.prep + ' мин до неё.' : 'пораньше, с запасом.')
+    : 'В этот день пар нет, подъём ' + hm(p.wake) + '.';
+  $('hero').innerHTML =
+    '<p class="hero-top">Ближайший подъём: ' + wdayName(d) + ', ' + d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '</p>' +
+    '<div class="pair"><div class="half bed"><div class="lab">Отбой</div><div class="big">' + hm(p.bed) + '</div><div class="sub">сон ' + String(S.sleep).replace('.', ',') + ' ч</div></div>' +
+    '<div class="half wake"><div class="lab">Подъём</div><div class="big">' + hm(p.wake) + '</div><div class="sub">' + (p.cs.length ? 'пары с ' + p.first : 'пар нет') + '</div></div></div>' +
+    '<p class="hero-note">' + note + ' ' + why + '</p>';
+}
+
+const CYC = [[6, 'С запасом'], [5, 'Идеал'], [4, 'Минимум'], [3, 'Аварийный']];
+function renderVariants() {
+  const { d, p } = ctx;
+  const earlyP = plan(d, 'early'), lateP = plan(d, 'late');
+  let h = '<h2>Когда ложиться: варианты</h2>' +
+    '<p class="hint">Время зависит от дня: считается от первой пары' + (p.cs.length ? ' (' + wdayName(d) + ', ' + p.first + ')' : ', в ' + wdayName(d) + ' пар нет') + '. Сон идёт циклами примерно по 90 минут, проснуться в конце цикла легче.</p>';
+  h += '<div class="seg"><button class="btn" type="button" data-mode="early" aria-pressed="' + (S.mode === 'early') + '">Пораньше<small>подъём ' + hm(earlyP.wake) + '</small></button>' +
+       '<button class="btn" type="button" data-mode="late" aria-pressed="' + (S.mode === 'late') + '">Впритык<small>подъём ' + hm(lateP.wake) + (lateP.cs.length ? ', за ' + S.prep + ' мин до пары' : ', пар нет') + '</small></button></div>';
+  h += '<p class="note">Пораньше: примерно за 3 часа до пары, но между 9:00 и 10:00. Впритык: за ' + S.prep + ' мин до первой пары.</p>';
+  const bn = ((p.bed % 1440) + 1440) % 1440;
+  if (S.mode === 'late' && bn >= 120 && bn <= 420) h += '<p class="note">Отбой в ' + hm(p.bed) + ' сдвигает весь режим на утро. Если так в несколько дней подряд, лучше вариант «Пораньше».</p>';
+  h += '<div class="mini"><span class="lbl">Засыпаю за</span>' + [10, 15, 30, 45, 60].map(v => '<button class="btn" type="button" data-fall="' + v + '" aria-pressed="' + (S.fall === v) + '">' + v + '</button>').join('') + '<span class="lbl">мин</span></div>';
+  h += '<div class="vars">';
+  const known = CYC.some(c => c[0] * 1.5 === S.sleep);
+  const row = (hours, title, sub, weak) => {
+    const bed = p.wake - hours * 60 - S.fall;
+    return '<button class="var' + (weak ? ' weak' : '') + '" type="button" data-sleep="' + hours + '" aria-pressed="' + (hours === S.sleep) + '"><span><span class="vt">' + title + '</span><br><span class="vs">' + sub + '</span></span><span class="vb">' + hm(bed) + '</span></button>';
+  };
+  if (!known) h += row(S.sleep, 'Ваше значение', String(S.sleep).replace('.', ',') + ' ч сна', false);
+  CYC.forEach(c => {
+    const hrs = c[0] * 1.5;
+    h += row(hrs, c[1], c[0] + ' ' + cyc(c[0]) + ', ' + dur(hrs * 60), c[0] <= 4);
+  });
+  h += '</div><p class="note">Нажмите на вариант, и он станет основным в плане и вверху страницы. Отбой учитывает, что вы засыпаете за ' + S.fall + ' мин.</p>';
+  $('variants').innerHTML = h;
+  $('variants').querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); render(); }));
+  $('variants').querySelectorAll('[data-fall]').forEach(b => b.addEventListener('click', () => { S.fall = Number(b.dataset.fall); save(); fillForm(); render(); }));
+  $('variants').querySelectorAll('[data-sleep]').forEach(b => b.addEventListener('click', () => { S.sleep = Number(b.dataset.sleep); save(); fillForm(); render(); }));
+}
+
+function renderNight() {
+  const { d, p, wakeAt, now } = ctx;
+  let h = '<h2>Ночная занятость</h2>' +
+    '<p class="hint">Если ночью чем-то заняты, посмотрите, сколько останется на сон до подъёма ' + wdayName(d) + ' в ' + hm(p.wake) + '.</p>' +
+    '<label class="switch-line" for="n-on"><input id="n-on" type="checkbox"' + (S.night ? ' checked' : '') + '><span>Сегодня ночью я занят</span></label>';
+  if (S.night) {
+    h += '<div class="night-row"><div class="field"><label for="n-until">Освобожусь в</label><input id="n-until" type="time" value="' + S.until + '"></div></div>';
+    const [uh, um] = S.until.split(':').map(Number);
+    let stop = new Date(wakeAt.getFullYear(), wakeAt.getMonth(), wakeAt.getDate(), uh, um);
+    if (stop >= wakeAt) stop = new Date(stop.getFullYear(), stop.getMonth(), stop.getDate() - 1, uh, um);
+    const sleepStart = new Date(stop.getTime() + S.fall * 6e4);
+    const sleepMin = Math.max(0, (wakeAt - sleepStart) / 6e4);
+    const cycles = Math.floor(sleepMin / 90);
+    const stop5 = new Date(wakeAt.getTime() - (5 * 90 + S.fall) * 6e4), stop4 = new Date(wakeAt.getTime() - (4 * 90 + S.fall) * 6e4);
+    let cls, title, tips = [];
+    if (stop < now) { cls = 'mid'; title = 'Это время уже прошло'; tips.push('Выберите время окончания позже текущего.'); }
+    else {
+      if (sleepMin >= 450) { cls = 'good'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Хватает.'; }
+      else if (sleepMin >= 360) { cls = 'mid'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Терпимо.'; tips.push('Днём может клонить в сон. Кофе лучше не позже ' + hmDate(new Date(wakeAt.getTime() + 6 * 36e5)) + '.'); }
+      else { cls = 'bad'; title = 'Сон ' + dur(sleepMin) + (cycles ? ', ' + cycles + ' ' + cyc(cycles) : '') + '. Мало.'; tips.push('Такой недосып скажется на парах. Не повторяйте две такие ночи подряд.'); tips.push('Если будет окно между парами, поспите 20–30 минут, но не позже 16:00, чтобы не сбить следующую ночь.'); }
+      if (p.cs.length && sleepMin < 450 && S.mode !== 'late') tips.push('Подъём можно сдвинуть на «впритык» (' + hm(plan(d, 'late').wake) + '), если успеваете собраться быстрее.');
+      tips.push('Чтобы выспаться по плану, освободиться нужно до ' + hmDate(stop5) + ' (5 циклов). Минимум, 4 цикла, до ' + hmDate(stop4) + '.');
+      tips.push('За 30–60 минут до конца включите ночной режим на экране и приглушите свет.');
+    }
+    h += '<div class="verdict ' + cls + '"><b>' + title + '</b><ul>' + tips.map(t => '<li>' + t + '</li>').join('') + '</ul></div>';
+  }
+  $('night').innerHTML = h;
+  $('n-on').addEventListener('change', ev => { S.night = ev.target.checked; save(); renderNight(); });
+  const nu = $('n-until');
+  if (nu) nu.addEventListener('input', ev => { if (ev.target.value) { S.until = ev.target.value; save(); renderNightKeep(); } });
+}
+
+function renderNightKeep() {
+  const active = document.activeElement && document.activeElement.id === 'n-until';
+  renderNight();
+  if (active) { const e = $('n-until'); if (e) e.focus(); }
+}
+
+function renderCues() {
+  const { d, p } = ctx;
+  const bedAt = at(d, p.bed);
+  const cue = (k, v) => '<div class="cue"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+  $('cues').innerHTML =
+    cue('Последний кофе или энергетик до', hmDate(new Date(bedAt.getTime() - 8 * 36e5))) +
+    cue('Выключить яркие экраны с', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('Выгрузить мысли на бумагу в', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('Лечь в кровать в', hm(p.bed));
+}
+
+function renderWeek() {
+  const today = new Date();
+  const mon = addDays(mondayOf(today), weekOffset * 7);
+  $('weekchip').textContent = weekNo(today) + ' нед. сейчас';
+  const sw = $('weekswitch');
+  sw.innerHTML = '';
+  [0, 1].forEach(o => {
+    const m = addDays(mondayOf(today), o * 7);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', o === weekOffset ? 'true' : 'false');
+    b.textContent = (o ? 'Следующая' : 'Эта неделя') + ' · ' + weekNo(m) + ' нед.';
+    b.addEventListener('click', () => { weekOffset = o; sel = addDays(mondayOf(today), o * 7 + Math.min(dow(sel), 6) - 1); if (!o && dow(today) <= 6) sel = today; render(); });
+    sw.appendChild(b);
+  });
+  const tabs = $('tabs');
+  tabs.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab' + (iso(d) === iso(today) ? ' today' : '') + (classes(d).length ? '' : ' off');
+    b.setAttribute('aria-pressed', iso(d) === iso(sel) ? 'true' : 'false');
+    b.innerHTML = '<span class="d">' + DAYS[i] + '</span><span class="n">' + d.getDate() + '</span>';
+    b.addEventListener('click', () => { sel = d; render(); });
+    tabs.appendChild(b);
+  }
+  let rows = '<tr><th>День</th><th>Пары</th><th>Подъём</th><th>Отбой</th></tr>';
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i), p = plan(d), k = iso(d);
+    const cur = k === iso(sel) ? ' class="cur"' : '';
+    const pairs = p.cs.length ? p.first + '–' + p.last : (HOLIDAYS[k] ? 'праздник' : skipped[k] ? 'вас нет' : 'нет пар');
+    rows += '<tr' + cur + '><td>' + DAYS[i] + ', ' + d.getDate() + '</td><td class="m">' + pairs + '</td><td class="m">' + hm(p.wake) + '</td><td class="m">' + hm(p.bed) + '</td></tr>';
+  }
+  $('plan').innerHTML = rows;
+}
+
+function renderDay() {
+  const now = new Date(), k = iso(sel), isToday = k === iso(now);
+  const nowM = now.getHours() * 60 + now.getMinutes();
+  const w = weekNo(sel);
+  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><span>' + w + ' неделя</span></div>';
+  const cs = classes(sel);
+  if (HOLIDAYS[k]) h += '<div class="empty">Праздничный день: ' + HOLIDAYS[k] + '. Пар нет.</div>';
+  else if (skipped[k]) h += '<div class="empty">Вы отметили, что в этот день вас нет на парах.</div>';
+  else if (!cs.length) h += '<div class="empty">В этот день пар нет.</div>';
+  const groups = [];
+  cs.forEach(e => {
+    let g = groups.find(x => x.s === e.s);
+    if (!g) { g = { s: e.s, items: [] }; groups.push(g); }
+    g.items.push(e);
+  });
+  const item = e => {
+    const meta = [e.r, e.p].filter(Boolean).join(' · ');
+    let chips = '<span class="chip t">' + TYPE[e.t] + '</span>';
+    if (e.unsure) chips += '<span class="chip warn">без дат, уточнить</span>';
+    return '<div class="subj">' + e.n + '</div>' + (meta ? '<div class="meta">' + meta + '</div>' : '') + '<div class="chips">' + chips + '</div>';
+  };
+  let prevEnd = null;
+  groups.forEach(g => {
+    const [a, b] = SLOTS[g.s];
+    if (prevEnd !== null && mins(a) - prevEnd > 45) h += '<p class="gap">окно ' + dur(mins(a) - prevEnd) + '</p>';
+    prevEnd = mins(b);
+    const live = isToday && nowM >= mins(a) && nowM < mins(b);
+    const past = isToday && nowM >= mins(b);
+    const dim = g.items.every(e => !counted(e));
+    let inner = '';
+    if (g.items.some(e => e.sub)) {
+      [1, 2].forEach(n => {
+        const it = g.items.find(e => e.sub === n);
+        inner += '<div class="subrow"><span class="chip warn lab">Подгруппа ' + n + '</span>' + (it ? item(it) : '<div class="meta">пары нет</div>') + '</div>';
+      });
+    } else inner = g.items.map(item).join('');
+    h += '<div class="card' + (live ? ' now' : '') + (past ? ' past' : '') + (dim ? ' dim' : '') + '"><div class="time"><span>' + a + '</span><span>' + b + '</span>' + (live ? '<span class="flag">идёт сейчас</span>' : '') + '</div><div class="body">' + inner + '</div></div>';
+  });
+  if (!HOLIDAYS[k]) h += '<button class="skipbtn" id="skipbtn" type="button">' + (skipped[k] ? 'Вернуть пары на этот день' : 'Меня нет на парах в этот день') + '</button>';
+  $('day').innerHTML = h;
+  const sb = $('skipbtn');
+  if (sb) sb.addEventListener('click', () => { if (skipped[k]) delete skipped[k]; else skipped[k] = 1; save(); render(); });
+}
+
+function render() { renderHero(); renderVariants(); renderNight(); renderCues(); renderWeek(); renderDay(); }
+
+
+const PALS = [
+  { id: 'indigo', name: 'Индиго', sw: ['#3445BF', '#B85F00'] },
+  { id: 'ocean', name: 'Океан', sw: ['#0B6E80', '#C2410C'] },
+  { id: 'forest', name: 'Лес', sw: ['#2F6B3F', '#A8590A'] },
+  { id: 'rose', name: 'Роза', sw: ['#A8286B', '#B4530F'] },
+  { id: 'graphite', name: 'Графит', sw: ['#2E3138', '#8A6A00'] }
+];
+const THEMES = [['auto', 'Авто'], ['light', 'Светлый'], ['dark', 'Тёмный']];
+let themeTouched = false;
+function applyLook() {
+  const r = document.documentElement;
+  if (S.pal && S.pal !== 'indigo') r.setAttribute('data-palette', S.pal); else r.removeAttribute('data-palette');
+  if (S.theme === 'light' || S.theme === 'dark') { r.setAttribute('data-theme', S.theme); themeTouched = true; }
+  else if (themeTouched) { r.removeAttribute('data-theme'); themeTouched = false; }
+}
+function renderLook() {
+  $('theme-seg').innerHTML = THEMES.map(t => '<button class="btn" type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (S.theme === t[0]) + '">' + t[1] + '</button>').join('');
+  $('pals').innerHTML = PALS.map(p => '<button class="swatch" type="button" data-pal="' + p.id + '" aria-pressed="' + (S.pal === p.id) + '"><span class="dots"><i style="background:' + p.sw[0] + '"></i><i style="background:' + p.sw[1] + '"></i></span><span>' + p.name + '</span></button>').join('');
+  document.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.themePick; save(); applyLook(); renderLook(); }));
+  document.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => { S.pal = b.dataset.pal; save(); applyLook(); renderLook(); }));
+}
+
+function fillForm() {
+  $('f-wake').value = S.wake;
+  $('f-sleep').value = S.sleep;
+  $('f-prep').value = S.prep;
+  $('f-fall').value = S.fall;
+  $('f-unsure').checked = S.unsure;
+}
+function bind() {
+  fillForm();
+  const num = { sleep: 'f-sleep', prep: 'f-prep', fall: 'f-fall' };
+  Object.keys(num).forEach(key => $(num[key]).addEventListener('input', ev => {
+    if (ev.target.value === '') return;
+    S[key] = Number(ev.target.value); save(); render();
+  }));
+  $('f-wake').addEventListener('input', ev => { if (ev.target.value) { S.wake = ev.target.value; save(); render(); } });
+  $('f-unsure').addEventListener('change', ev => { S.unsure = ev.target.checked; save(); render(); });
+  $('f-reset').addEventListener('click', () => { S = { ...DEF, pal: S.pal, theme: S.theme }; save(); fillForm(); render(); });
+}
+
+// Дыхание 4-7-8
+const PH = [['Вдох', 4], ['Задержка', 7], ['Выдох', 8]];
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let br = { on: false, t: null, phase: 0, left: 0, cycle: 1 };
+function brPaint() {
+  const c = $('brc');
+  c.style.transitionDuration = reduce ? '0s' : PH[br.phase][1] + 's';
+  c.style.transform = 'scale(' + (br.phase === 2 ? 0.55 : 1) + ')';
+  $('brph').textContent = PH[br.phase][0];
+  $('brsec').textContent = br.left;
+  $('brsub').textContent = 'Цикл ' + br.cycle + ' из 4';
+}
+function brStop(done) {
+  clearInterval(br.t); br.on = false;
+  const c = $('brc'); c.style.transitionDuration = reduce ? '0s' : '1.5s'; c.style.transform = 'scale(.55)';
+  $('brph').textContent = done ? 'Готово' : 'Пауза'; $('brsec').textContent = '4-7-8';
+  $('brsub').textContent = done ? 'Четыре цикла закончились. Если сна нет, повторите или попробуйте другой способ.' : 'Нажмите «Начать», когда будете готовы.';
+  $('brbtn').textContent = done ? 'Ещё раз' : 'Начать';
+}
+function brTick() {
+  br.left -= 1;
+  if (br.left <= 0) {
+    br.phase += 1;
+    if (br.phase >= 3) { br.phase = 0; br.cycle += 1; if (br.cycle > 4) { brStop(true); return; } }
+    br.left = PH[br.phase][1];
+  }
+  brPaint();
+}
+$('brbtn').addEventListener('click', () => {
+  if (br.on) { brStop(false); return; }
+  br = { on: true, t: null, phase: 0, left: PH[0][1], cycle: 1 };
+  $('brbtn').textContent = 'Остановить';
+  brPaint();
+  br.t = setInterval(brTick, 1000);
+});
+$('d-breath').addEventListener('toggle', () => { if (!$('d-breath').open && br.on) brStop(false); });
+
+applyLook();
+renderLook();
+bind();
+render();
+setInterval(() => { if (document.activeElement && /^(INPUT|SELECT)$/.test(document.activeElement.tagName)) return; renderHero(); renderCues(); renderDay(); }, 60000);
+</script>
+
+</body></html>
