@@ -1,11 +1,23 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3445BF">
+<meta name="application-name" content="Пары и сон">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Пары и сон">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Пары и сон</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: одна колонка для телефона. Сверху ближайший отбой и подъём, ниже вкладки дней с парами, потом план на неделю и настройки. */
+/* Layout: вверху кнопка оформления, под ней две вкладки (Расписание, Сон). В «Сне» главная карточка с отбоем и подъёмом, ниже четыре раздела с иконками. */
 :root {
   --bg: #EDF0F7;
   --surface: #FFFFFF;
@@ -36,75 +48,159 @@
   --ok: #4CC38A; --warn: #FF8A80; --on-night: #0D1120; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
-  padding-block: 20px 48px;
+  padding-block: 18px 48px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-button, input { font: inherit; color: inherit; }
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+.ic { width: 1.2em; height: 1.2em; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.eyebrow { margin: 0 0 2px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 26px; letter-spacing: -.01em; text-wrap: balance; }
-.weekchip { font-family: var(--f-mono); font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); white-space: nowrap; }
+/* Шапка */
+.top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 46px; height: 46px; flex: none; }
+.logo svg, .inst-logo svg { width: 100%; height: 100%; display: block; }
+.eyebrow { margin: 0; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: -.01em; }
+.iconbtn { width: 42px; height: 42px; border-radius: 13px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; }
+.iconbtn .ic { width: 21px; height: 21px; }
+.iconbtn[aria-expanded="true"] { border-color: var(--night); color: var(--night); }
+.lookpop { position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; width: min(330px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg3 button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); font-size: 12px; }
+.seg3 button[aria-pressed="true"] { border-color: var(--night); color: var(--night); background: var(--night-soft); }
+.pals { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.sw { aspect-ratio: 1; width: 100%; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
 
-.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.hero-top { margin: 0; color: var(--muted); font-size: 13px; }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.half { min-width: 0; border-radius: 12px; padding: 12px 14px; }
-.half.bed { background: var(--night-soft); }
-.half.wake { background: var(--dawn-soft); }
-.half .lab { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
-.half.bed .lab { color: var(--night); }
-.half.wake .lab { color: var(--dawn); }
-.half .big { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 9.5vw, 42px); line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.half.bed .big { color: var(--night); }
-.half.wake .big { color: var(--dawn); }
-.half .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
-.hero-note { margin: 0; font-size: 14px; }
+/* Основные вкладки */
+.maintabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.maintabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 8px; border-radius: 12px; border: 0; background: transparent; font-weight: 600; font-size: 15px; color: var(--muted); }
+.maintabs button[aria-pressed="true"] { background: var(--night); color: var(--on-night); }
+.tabpane { display: flex; flex-direction: column; gap: 16px; }
 
+/* Общие карточки */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.panel h2 .ic { color: var(--night); }
+.hint, .note { margin: 0; font-size: 13px; color: var(--muted); }
+.btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.btn.pri { background: var(--night); border-color: var(--night); color: var(--on-night); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.pri[aria-pressed="true"] { background: var(--night); color: var(--on-night); border-color: var(--night); }
+
+/* Расписание */
 .switch { display: flex; gap: 8px; }
-.switch button { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.switch button { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
 .switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-
 .tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
-.tab { min-width: 0; padding: 8px 0 7px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.tab { min-width: 0; padding: 8px 0 7px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 1px; position: relative; }
 .tab .d { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .tab .n { font-family: var(--f-mono); font-size: 15px; }
 .tab[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--on-night); }
 .tab[aria-pressed="true"] .d { color: inherit; opacity: .8; }
 .tab.today:not([aria-pressed="true"]) { border-color: var(--night); }
+.tab.today::after { content: ""; position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .7; }
 .tab.off:not([aria-pressed="true"]) { opacity: .55; }
-
-.day { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-.day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.day-head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.day { display: flex; flex-direction: column; gap: 8px; }
+.day-head { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.day-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
 .day-head h2::first-letter { text-transform: uppercase; }
-.day-head span { color: var(--muted); font-size: 13px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; grid-template-columns: 62px 1fr; gap: 12px; }
+.sumrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.pill .ic { width: 14px; height: 14px; }
+.pill.hl { color: var(--night); border-color: var(--night); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: grid; grid-template-columns: 54px 1fr; gap: 14px; }
 .card.now { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok); }
 .card.past { opacity: .5; }
 .card.dim { opacity: .55; border-style: dashed; }
-.time { font-family: var(--f-mono); font-size: 14px; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
-.time span:last-child { color: var(--muted); }
-.body { min-width: 0; }
-.subj { font-weight: 600; overflow-wrap: anywhere; }
-.meta { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.time { font-family: var(--f-mono); font-size: 14px; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; padding-right: 12px; border-right: 1px solid var(--line); }
+.time span:nth-child(2) { color: var(--muted); }
+.flag { font-family: var(--f-body); font-size: 11.5px; color: var(--ok); margin-top: 4px; line-height: 1.2; }
+.body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.subj { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
+.tbadge { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; flex: none; margin-top: 1px; }
+.tbadge .ic { width: 14px; height: 14px; }
+.tbadge[data-t="лек"] { background: var(--night-soft); color: var(--night); }
+.tbadge[data-t="лаб"] { background: var(--dawn-soft); color: var(--dawn); }
+.tbadge[data-t="пр"] { background: color-mix(in srgb, var(--ok) 16%, var(--surface)); color: var(--ok); }
+.tbadge[data-t="кур"] { background: var(--bg); color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 13px; padding-left: 32px; }
+.meta span { display: inline-flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
+.meta .ic { width: 13px; height: 13px; }
+.joke { padding-left: 32px; font-size: 13px; font-style: italic; color: var(--dawn); display: flex; align-items: center; gap: 6px; }
+.joke .ic { width: 14px; height: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 32px; margin-top: 2px; }
 .chip { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.chip.t { border-color: var(--night); color: var(--night); }
 .chip.warn { border-color: var(--dawn); color: var(--dawn); }
-.chip.live { border-color: var(--ok); color: var(--ok); }
+.subrow { display: flex; flex-direction: column; gap: 3px; }
+.subrow + .subrow { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
+.sublab { align-self: flex-start; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--night-soft); color: var(--night); font-weight: 600; margin-bottom: 2px; }
+.nopair { padding-left: 32px; color: var(--muted); font-size: 13px; }
 .gap { margin: 0; text-align: center; font-size: 12.5px; color: var(--muted); }
-.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; color: var(--muted); }
-.skipbtn { align-self: flex-start; margin-top: 4px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; font-size: 13.5px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 16px; padding: 18px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+.skipbtn { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; padding: 9px 13px; border-radius: 12px; border: 1px solid var(--line); background: transparent; font-size: 13.5px; }
 
-h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+/* Сон: главная карточка */
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.hero-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.hero-head .ic { color: var(--night); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.half { min-width: 0; border-radius: 14px; padding: 12px 14px; }
+.half.bed { background: var(--night-soft); }
+.half.wake { background: var(--dawn-soft); }
+.half .lab { display: flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.half.bed .lab { color: var(--night); }
+.half.wake .lab { color: var(--dawn); }
+.half .big { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 9.5vw, 40px); line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.half.bed .big { color: var(--night); }
+.half.wake .big { color: var(--dawn); }
+.half .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
+.hero-note { margin: 0; font-size: 14px; }
+.nightbox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.nightbtn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: left; font-weight: 500; }
+.nightbtn > span:first-of-type { flex: 1; }
+.nightbtn .ic { color: var(--night); }
+.tog { width: 38px; height: 22px; border-radius: 999px; background: var(--line); position: relative; flex: none; transition: background .15s; }
+.tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); transition: transform .15s; }
+.nightbtn[aria-pressed="true"] { border-color: var(--night); }
+.nightbtn[aria-pressed="true"] .tog { background: var(--night); }
+.nightbtn[aria-pressed="true"] .tog::after { transform: translateX(16px); background: var(--on-night); }
+.night-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.night-row input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.verdict { border-radius: 12px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.verdict b { font-size: 15px; }
+.verdict.good { background: var(--night-soft); }
+.verdict.mid { background: var(--dawn-soft); }
+.verdict.bad { background: var(--dawn-soft); border: 1px solid var(--warn); }
+.verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+
+/* Сон: разделы */
+.subnav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.subnav button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; color: var(--muted); min-width: 0; }
+.subnav .ic { width: 20px; height: 20px; }
+.subnav button[aria-pressed="true"] { background: var(--night-soft); border-color: var(--night); color: var(--night); font-weight: 600; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.seg .btn { text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.seg .btn small { font-size: 11.5px; opacity: .8; line-height: 1.25; }
+.mini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
+.mini .lbl { color: var(--muted); }
+.mini .btn { padding: 5px 10px; font-size: 13px; font-family: var(--f-mono); }
+.leadin { width: 84px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.vars { display: flex; flex-direction: column; gap: 8px; }
+.var { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); width: 100%; }
+.var[aria-pressed="true"] { border-color: var(--night); background: var(--night-soft); }
+.var .vt { font-weight: 600; }
+.var .vs { font-size: 12.5px; color: var(--muted); }
+.var .vb { font-family: var(--f-display); font-weight: 700; font-size: 22px; color: var(--night); font-variant-numeric: tabular-nums; }
+.var.weak .vb { color: var(--dawn); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
 table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th:first-child, td:first-child { padding-left: 12px; }
@@ -113,59 +209,15 @@ th { font-size: 12px; color: var(--muted); font-weight: 500; }
 tr:last-child td { border-bottom: 0; }
 td.m { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 tr.cur td:first-child { color: var(--night); font-weight: 600; }
-td .e { color: var(--dawn); display: block; font-family: var(--f-body); font-size: 11px; line-height: 1.1; }
-
-details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-summary { cursor: pointer; font-weight: 600; }
-.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.field label { font-size: 13px; color: var(--muted); }
-.field input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; min-width: 0; font-family: var(--f-mono); }
-.check { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
-.check input { margin-top: 3px; }
-.reset { grid-column: 1 / -1; justify-self: start; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; }
-footer { font-size: 12.5px; color: var(--muted); }
-.sign { margin: 14px 0 0; font-family: var(--f-display); font-weight: 500; font-size: 13px; color: var(--ink); text-align: center; }
-@media (max-width: 380px) { .pair { grid-template-columns: 1fr; } .form { grid-template-columns: 1fr; } }
-.banner { background: var(--surface); border: 1px solid var(--night); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
-.banner[hidden] { display: none; }
-.banner p { margin: 0; font-size: 14px; }
-.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
-.btn.pri { background: var(--night); border-color: var(--night); color: var(--on-night); }
-.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-.panel h2 { margin: 0; font-size: 16px; font-weight: 600; }
-.panel .hint { margin: 0; font-size: 13px; color: var(--muted); }
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.seg .btn { text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.seg .btn small { font-size: 11.5px; opacity: .8; line-height: 1.25; }
-.mini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
-.mini .lbl { color: var(--muted); }
-.mini .btn { padding: 5px 10px; font-size: 13px; font-family: var(--f-mono); }
-
-.vars { display: flex; flex-direction: column; gap: 8px; }
-.var { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); width: 100%; }
-.var[aria-pressed="true"] { border-color: var(--night); background: var(--night-soft); }
-.var .vt { font-weight: 600; }
-.var .vs { font-size: 12.5px; color: var(--muted); }
-.var .vb { font-family: var(--f-display); font-weight: 700; font-size: 22px; color: var(--night); font-variant-numeric: tabular-nums; }
-.var.weak .vb { color: var(--dawn); }
-
-.night-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.night-row .field { flex: 1 1 130px; }
-.verdict { border-radius: 12px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
-.verdict b { font-size: 16px; }
-.verdict.good { background: var(--night-soft); }
-.verdict.mid { background: var(--dawn-soft); }
-.verdict.bad { background: var(--dawn-soft); border: 1px solid var(--warn); }
-.verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
-.switch-line { display: flex; gap: 10px; align-items: center; font-size: 14.5px; }
-
-.tech { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.cues { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cue { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--bg); display: flex; flex-direction: column; gap: 3px; }
+.cue .k { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.cue .k .ic { color: var(--night); margin-top: 1px; }
+.cue .v { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.tech { display: flex; flex-direction: column; gap: 8px; }
 .tech details { padding: 10px 12px; background: var(--bg); border-radius: 12px; }
-.tech summary { font-weight: 600; font-size: 14.5px; }
+.tech summary { font-weight: 600; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.tech summary .ic { color: var(--night); }
 .tech ol, .tech ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .tech p { margin: 8px 0 0; font-size: 14px; }
 .brwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0 4px; }
@@ -173,23 +225,28 @@ footer { font-size: 12.5px; color: var(--muted); }
 .brc .ph { font-size: 14px; color: var(--night); }
 .brc .sec { font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--night); font-variant-numeric: tabular-nums; }
 .brsub { font-size: 13px; color: var(--muted); min-height: 1.4em; text-align: center; }
-.cues { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cue { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); }
-.cue .k { font-size: 12px; color: var(--muted); }
-.cue .v { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
-.joke { margin-top: 2px; font-size: 13px; font-style: italic; color: var(--dawn); }
-.leadin { width: 84px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+@media (prefers-reduced-motion: reduce) { .brc, .tog, .tog::after { transition-duration: 0s !important; } }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+.field label { font-size: 13px; color: var(--muted); }
+.field input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; min-width: 0; font-family: var(--f-mono); }
 .daygrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .daygrid label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
 .daygrid input { width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
-.field.wide { grid-column: 1 / -1; }
-.subrow { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
-.subrow + .subrow { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
-.subrow .chip.lab { margin-bottom: 2px; }
-.flag { font-family: var(--f-body); font-size: 11.5px; color: var(--ok); margin-top: 4px; }
-.note { font-size: 12.5px; color: var(--muted); margin: 0; }
-@media (prefers-reduced-motion: reduce) { .brc { transition-duration: 0s !important; } }
-select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; }
+.check { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; }
+.reset { grid-column: 1 / -1; justify-self: start; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; }
+.subsel { display: flex; align-items: center; gap: 8px; }
+.sublbl { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); margin-right: auto; }
+.subsel button { min-width: 64px; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.subsel button[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--on-night); }
+.install { display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: start; }
+.inst-logo { width: 84px; height: 84px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.2)); }
+footer { font-size: 12.5px; color: var(--muted); }
+.sign { margin: 14px 0 0; font-family: var(--f-display); font-weight: 500; font-size: 13px; color: var(--ink); text-align: center; }
+@media (max-width: 380px) { .pair, .form, .cues { grid-template-columns: 1fr; } .seg { grid-template-columns: 1fr; } }
+
 /* Палитры: светлая версия на :root, тёмная в двух блоках (по системе и по выбору) */
 :root[data-palette="ocean"] { --bg: #E8F3F5; --surface: #FFFFFF; --ink: #0F2A33; --muted: #4F6A73; --line: #CFE0E4; --night: #0B6E80; --night-soft: #D4EDF1; --dawn: #C2410C; --dawn-soft: #FFE6D9; --on-night: #FFFFFF; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="ocean"] { --bg: #0A1A1F; --surface: #112A31; --ink: #E3F2F5; --muted: #8FB0B8; --line: #1F4048; --night: #5CD0E6; --night-soft: #14424D; --dawn: #FF9E6B; --dawn-soft: #3F2316; --on-night: #06242B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
@@ -203,64 +260,112 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
 :root[data-palette="graphite"] { --bg: #EFEFF0; --surface: #FFFFFF; --ink: #1B1C1F; --muted: #66686E; --line: #DADBDE; --night: #2E3138; --night-soft: #E3E4E8; --dawn: #8A6A00; --dawn-soft: #F6EDCB; --on-night: #FFFFFF; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
 :root[data-theme="dark"][data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
-
-.look { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-.look summary { font-weight: 600; }
-.look .body-in { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-.look .lbl { font-size: 13px; color: var(--muted); margin-bottom: 6px; display: block; }
-.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.pals { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
-.swatch { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: left; min-width: 0; }
-.swatch[aria-pressed="true"] { border-color: var(--night); box-shadow: 0 0 0 1px var(--night); }
-.dots { display: inline-flex; flex: none; }
-.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface); }
-.dots i + i { margin-left: -6px; }
-[hidden] { display: none !important; }
-.tabpane { display: flex; flex-direction: column; gap: 20px; }
-.maintabs button { padding: 11px 10px; font-weight: 600; font-size: 15px; }
+:root[data-palette="violet"] { --bg: #F2EEF7; --surface: #FFFFFF; --ink: #1B1226; --muted: #60536E; --line: #DBD2E4; --night: #5D259D; --night-soft: #EADBFA; --dawn: #966708; --dawn-soft: #FFEECC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="violet"] { --bg: #110C18; --surface: #1D1526; --ink: #EDE8F3; --muted: #A79BB5; --line: #372A46; --night: #B97EFC; --night-soft: #311C4A; --dawn: #FFC95C; --dawn-soft: #413110; --on-night: #190D26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="violet"] { --bg: #110C18; --surface: #1D1526; --ink: #EDE8F3; --muted: #A79BB5; --line: #372A46; --night: #B97EFC; --night-soft: #311C4A; --dawn: #FFC95C; --dawn-soft: #413110; --on-night: #190D26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="teal"] { --bg: #EEF7F6; --surface: #FFFFFF; --ink: #122624; --muted: #536E6C; --line: #D2E4E2; --night: #1D7C72; --night-soft: #DBFAF7; --dawn: #962408; --dawn-soft: #FFD6CC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="teal"] { --bg: #0C1817; --surface: #152624; --ink: #E8F3F1; --muted: #9BB5B3; --line: #2A4643; --night: #7EFCEF; --night-soft: #1C4A45; --dawn: #FF7C5C; --dawn-soft: #411A10; --on-night: #0D2624; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="teal"] { --bg: #0C1817; --surface: #152624; --ink: #E8F3F1; --muted: #9BB5B3; --line: #2A4643; --night: #7EFCEF; --night-soft: #1C4A45; --dawn: #FF7C5C; --dawn-soft: #411A10; --on-night: #0D2624; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="crimson"] { --bg: #F7EEEF; --surface: #FFFFFF; --ink: #261216; --muted: #6E5358; --line: #E4D2D5; --night: #9D2539; --night-soft: #FADBE0; --dawn: #966208; --dawn-soft: #FFECCC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="crimson"] { --bg: #180C0E; --surface: #261517; --ink: #F3E8EA; --muted: #B59BA0; --line: #462A2F; --night: #FC7E93; --night-soft: #4A1C24; --dawn: #FFC35C; --dawn-soft: #412F10; --on-night: #260D11; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="crimson"] { --bg: #180C0E; --surface: #261517; --ink: #F3E8EA; --muted: #B59BA0; --line: #462A2F; --night: #FC7E93; --night-soft: #4A1C24; --dawn: #FFC35C; --dawn-soft: #412F10; --on-night: #260D11; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="amber"] { --bg: #F7F3EE; --surface: #FFFFFF; --ink: #261E12; --muted: #6E6453; --line: #E4DDD2; --night: #9D6D25; --night-soft: #FAEEDB; --dawn: #960D08; --dawn-soft: #FFCECC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="amber"] { --bg: #18130C; --surface: #261F15; --ink: #F3EEE8; --muted: #B5AB9B; --line: #463B2A; --night: #FCC97E; --night-soft: #4A381C; --dawn: #FF615C; --dawn-soft: #411210; --on-night: #261C0D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="amber"] { --bg: #18130C; --surface: #261F15; --ink: #F3EEE8; --muted: #B5AB9B; --line: #463B2A; --night: #FCC97E; --night-soft: #4A381C; --dawn: #FF615C; --dawn-soft: #411210; --on-night: #261C0D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="olive"] { --bg: #F3F7EE; --surface: #FFFFFF; --ink: #1F2612; --muted: #656E53; --line: #DEE4D2; --night: #597C1D; --night-soft: #EFFADB; --dawn: #963C08; --dawn-soft: #FFDFCC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="olive"] { --bg: #14180C; --surface: #202615; --ink: #EFF3E8; --muted: #ACB59B; --line: #3C462A; --night: #CDFC7E; --night-soft: #394A1C; --dawn: #FF985C; --dawn-soft: #412210; --on-night: #1D260D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="olive"] { --bg: #14180C; --surface: #202615; --ink: #EFF3E8; --muted: #ACB59B; --line: #3C462A; --night: #CDFC7E; --night-soft: #394A1C; --dawn: #FF985C; --dawn-soft: #412210; --on-night: #1D260D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="coffee"] { --bg: #F7F1EE; --surface: #FFFFFF; --ink: #261A12; --muted: #6E5E53; --line: #E4DAD2; --night: #9D5525; --night-soft: #FAE8DB; --dawn: #085B96; --dawn-soft: #CCEAFF; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="coffee"] { --bg: #18110C; --surface: #261C15; --ink: #F3ECE8; --muted: #B5A69B; --line: #46352A; --night: #FCB07E; --night-soft: #4A2E1C; --dawn: #5CBBFF; --dawn-soft: #102D41; --on-night: #26170D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="coffee"] { --bg: #18110C; --surface: #261C15; --ink: #F3ECE8; --muted: #B5A69B; --line: #46352A; --night: #FCB07E; --night-soft: #4A2E1C; --dawn: #5CBBFF; --dawn-soft: #102D41; --on-night: #26170D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="sky"] { --bg: #EEF3F7; --surface: #FFFFFF; --ink: #121D26; --muted: #53626E; --line: #D2DCE4; --night: #25659D; --night-soft: #DBECFA; --dawn: #964F08; --dawn-soft: #FFE6CC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="sky"] { --bg: #0C1218; --surface: #151E26; --ink: #E8EEF3; --muted: #9BA9B5; --line: #2A3946; --night: #7EC1FC; --night-soft: #1C354A; --dawn: #FFAD5C; --dawn-soft: #412910; --on-night: #0D1A26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="sky"] { --bg: #0C1218; --surface: #151E26; --ink: #E8EEF3; --muted: #9BA9B5; --line: #2A3946; --night: #7EC1FC; --night-soft: #1C354A; --dawn: #FFAD5C; --dawn-soft: #412910; --on-night: #0D1A26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
 </style>
+<style>html{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15.5" cy="7.5" r="1"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><path d="M7.5 14h9"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 1.5M5 4.5L3 6.5M19 4.5l2 2"/></symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M3 12h15a3 3 0 1 1-3 3M3 16h7"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16v4M17 18h4"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M5 8h12v6a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17M8 3v2M12 3v2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+    <symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4M16 11h.01M18 14h.01"/></symbol>
+    <symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+  </defs>
+</svg>
 
 <main class="wrap">
-  <header>
-    <div>
-      <p class="eyebrow">Группа 10305126 · МСФ</p>
-      <h1>Пары и сон</h1>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" id="logo"></span>
+      <div>
+        <p class="eyebrow">Группа 10305126 · МСФ</p>
+        <h1>Пары и сон</h1>
+      </div>
     </div>
-    <span class="weekchip" id="weekchip"></span>
+    <button class="iconbtn" id="look-btn" type="button" aria-label="Оформление" aria-expanded="false" aria-controls="lookpop"></button>
+    <div class="lookpop" id="lookpop" hidden>
+      <div class="seg3" id="theme-seg"></div>
+      <div class="pals" id="pals"></div>
+    </div>
   </header>
 
-  <div class="switch maintabs" id="maintabs" role="tablist">
-    <button type="button" role="tab" id="mt-sleep" data-tab="sleep" aria-pressed="true">Сон</button>
-    <button type="button" role="tab" id="mt-sched" data-tab="sched" aria-pressed="false">Расписание</button>
+  <nav class="maintabs" id="maintabs" aria-label="Разделы">
+    <button type="button" id="mt-sched" data-tab="sched" aria-pressed="true"></button>
+    <button type="button" id="mt-sleep" data-tab="sleep" aria-pressed="false"></button>
+  </nav>
+
+  <div class="tabpane" id="tab-sched">
+    <div class="subsel" id="subsel" role="group" aria-label="Подгруппа"></div>
+    <div>
+      <div class="switch" id="weekswitch"></div>
+      <div class="tabs" id="tabs"></div>
+    </div>
+    <div class="day" id="day"></div>
   </div>
 
-  <div class="tabpane" id="tab-sleep" role="tabpanel" aria-labelledby="mt-sleep">
-  <section class="hero" id="hero" aria-live="polite"></section>
+  <div class="tabpane" id="tab-sleep" hidden>
+    <section class="hero" id="hero" aria-live="polite"></section>
 
-  
+    <nav class="subnav" id="subnav" aria-label="Разделы сна"></nav>
 
-  <section class="panel" id="variants"></section>
+    <section class="panel" id="sp-var"></section>
 
-  
-
-  <section class="panel" id="night"></section>
-
-  
-
-  <section>
-      <h3>План на неделю</h3>
+    <section class="panel" id="sp-week" hidden>
+      <h2><svg class="ic"><use href="#i-list"/></svg>Подъём и отбой по дням</h2>
+      <p class="hint" id="week-hint"></p>
       <div class="tablewrap"><table id="plan"></table></div>
     </section>
 
-  
-
-  <section class="panel" id="sleeptips">
-      <h2>Не получается уснуть</h2>
+    <section class="panel" id="sp-tips" hidden>
+      <h2><svg class="ic"><use href="#i-wind"/></svg>Не получается уснуть</h2>
       <p class="hint">Что сделать до отбоя и что попробовать, если лежите и не спите. Это общие советы, не лечение.</p>
       <div class="cues" id="cues"></div>
       <div class="tech">
         <details id="d-breath">
-          <summary>Дыхание 4-7-8, 4 цикла</summary>
+          <summary><svg class="ic"><use href="#i-wind"/></svg>Дыхание 4-7-8, 4 цикла</summary>
           <p>Сядьте или лягте удобно. Вдох носом 4 секунды, пауза 7, медленный выдох ртом 8. Если закружится голова, дышите как обычно.</p>
           <div class="brwrap">
             <div class="brc" id="brc"><span class="ph" id="brph">Готово</span><span class="sec" id="brsec">4-7-8</span></div>
@@ -269,7 +374,7 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
           </div>
         </details>
         <details>
-          <summary>Расслабление мышц по очереди</summary>
+          <summary><svg class="ic"><use href="#i-user"/></svg>Расслабление мышц по очереди</summary>
           <ol>
             <li>Лягте на спину. Сожмите стопы на 5 секунд, потом отпустите на 10–15.</li>
             <li>Так же двигайтесь вверх: голени, бёдра, живот, кисти, плечи.</li>
@@ -278,11 +383,11 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
           </ol>
         </details>
         <details>
-          <summary>Слова на выбранную букву</summary>
+          <summary><svg class="ic"><use href="#i-sparkles"/></svg>Слова на выбранную букву</summary>
           <p>Это способ отвлечь голову от мыслей. Выберите нейтральное слово, например «звезда». На каждую букву придумывайте слова: на «з» это зима, забор, зонт. Представляйте каждое слово несколько секунд и переходите к следующему. Не связывайте слова в историю.</p>
         </details>
         <details>
-          <summary>Если лежите больше 20 минут</summary>
+          <summary><svg class="ic"><use href="#i-clock"/></svg>Если лежите больше 20 минут</summary>
           <ul>
             <li>Не смотрите на часы и не заставляйте себя заснуть.</li>
             <li>Встаньте, включите тусклый свет и займитесь чем-то тихим без экрана: книга, растяжка, тёплая вода.</li>
@@ -291,51 +396,41 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
           </ul>
         </details>
         <details>
-          <summary>Выгрузить мысли на бумагу</summary>
+          <summary><svg class="ic"><use href="#i-pencil"/></svg>Выгрузить мысли на бумагу</summary>
           <p>За час до отбоя на 5 минут запишите всё, что крутится в голове: дела на завтра, вопросы, тревоги. Когда это лежит на бумаге, голове проще отпустить.</p>
         </details>
         <details>
-          <summary>Когда нужен врач</summary>
+          <summary><svg class="ic"><use href="#i-heart"/></svg>Когда нужен врач</summary>
           <p>Если проблемы со сном держатся больше трёх недель или из-за них трудно учиться, стоит обратиться к врачу. Таблетки и добавки без назначения я не советую.</p>
         </details>
       </div>
     </section>
 
-  
-  </div>
-
-  <div class="tabpane" id="tab-sched" role="tabpanel" aria-labelledby="mt-sched" hidden>
-  <section>
-      <div class="switch" id="weekswitch"></div>
-      <div class="tabs" id="tabs"></div>
-      <div class="day" id="day"></div>
+    <section class="panel" id="sp-set" hidden>
+      <h2><svg class="ic"><use href="#i-sliders"/></svg>Настройки режима</h2>
+      <div class="form">
+        <div class="field"><label for="f-wake">Подъём в дни без пар</label><input id="f-wake" type="time"></div>
+        <div class="field"><label for="f-sleep">Сколько спать, ч</label><input id="f-sleep" type="number" min="3" max="12" step="0.5"></div>
+        <div class="field"><label for="f-prep">Впритык: за сколько минут до пары</label><input id="f-prep" type="number" min="0" max="240" step="5"></div>
+        <div class="field"><label for="f-fall">Засыпаю за, мин</label><input id="f-fall" type="number" min="0" max="120" step="5"></div>
+        <div class="field wide"><label>Свой подъём по дням: за сколько минут до первой пары (пусто, если общее значение). Работает в режиме «Своё».</label><div class="daygrid" id="daygrid"></div></div>
+        <label class="check"><input id="f-unsure" type="checkbox"><span>Не учитывать пары ОИЗ без дат. Их стоит уточнить у старосты.</span></label>
+        <button class="reset" id="f-reset" type="button">Сбросить настройки</button>
+      </div>
+      <h2 style="margin-top:6px"><svg class="ic"><use href="#i-phone"/></svg>Значок на рабочий стол</h2>
+      <div class="install">
+        <div class="inst-logo" id="inst-logo"></div>
+        <div>
+          <p class="hint">Android, Chrome: меню с тремя точками, затем «Добавить на главный экран». iPhone, Safari: кнопка «Поделиться», затем «На экран Домой».</p>
+          <p class="hint">Какой значок появится, решает страница, которую вы открыли. Эту страницу открывает Claude, поэтому значок может быть общим. Свой значок и работа без интернета есть в отдельном комплекте файлов, его можно выложить на любой сайт-хостинг.</p>
+        </div>
+      </div>
+      <h2 style="margin-top:6px"><svg class="ic"><use href="#i-sliders"/></svg>Где хранятся настройки</h2>
+      <p class="hint">Подгруппа, режим, палитра и отметки «меня нет» сохраняются в памяти браузера и дублируются в cookie на год. Если очистить данные сайта или открыть страницу в другом браузере, всё сбросится.</p>
     </section>
-
-  
   </div>
 
-  <details class="look" id="look">
-    <summary>Оформление</summary>
-    <div class="body-in">
-      <div><span class="lbl">Режим</span><div class="seg3" id="theme-seg"></div></div>
-      <div><span class="lbl">Палитра</span><div class="pals" id="pals"></div></div>
-    </div>
-  </details>
-
-  <details id="settings">
-    <summary>Настройки режима</summary>
-    <div class="form">
-      <div class="field"><label for="f-wake">Подъём в дни без пар</label><input id="f-wake" type="time"></div>
-      <div class="field"><label for="f-sleep">Сколько спать, ч</label><input id="f-sleep" type="number" min="3" max="12" step="0.5"></div>
-      <div class="field"><label for="f-prep">Впритык: за сколько минут до пары</label><input id="f-prep" type="number" min="0" max="240" step="5"></div>
-      <div class="field"><label for="f-fall">Засыпаю за, мин</label><input id="f-fall" type="number" min="0" max="120" step="5"></div>
-      <div class="field wide"><label>Свой подъём по дням: за сколько минут до первой пары (пусто, если общее значение). Работает в режиме «Своё».</label><div class="daygrid" id="daygrid"></div></div>
-      <label class="check"><input id="f-unsure" type="checkbox"><span>Не учитывать пары ОИЗ без дат. Их стоит уточнить у старосты.</span></label>
-      <button class="reset" id="f-reset" type="button">Сбросить настройки</button>
-    </div>
-  </details>
-
-  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппа 1 это левый столбец вашей группы в таблице, подгруппа 2 правый. Подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
+  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппы по словам старосты: информатика у 1-й подгруппы по вторникам и в четверг на 2-й неделе, у 2-й по пятницам и в четверг на 1-й неделе. Химия в эти четверги у другой подгруппы поставлена по логике и помечена «предположение». Если выбрана «Обе», подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
 </main>
 
 
@@ -344,7 +439,7 @@ const SLOTS = [['09:55','11:30'],['12:00','13:35'],['13:55','15:30'],['15:40','1
 const DAYS = ['пн','вт','ср','чт','пт','сб'];
 const HOLIDAYS = { '2026-11-07': 'День Октябрьской революции' };
 const BASE = Date.UTC(2026, 7, 31);
-// d: день 1-6, s: пара 0-5, w: неделя (0 обе), sub: подгруппа 1 (левая) или 2 (правая), unsure: без подтверждения
+// d: день 1-6, s: пара 0-5, w: неделя (0 обе), sub: подгруппа 1 или 2, unsure: без дат, guess: предположение
 const L = [
   {d:1,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
   {d:1,s:2,w:1,t:'пр',n:'ОИЗ. Инженерная графика',r:'ауд. 510, к. 8',p:'',unsure:1},
@@ -370,8 +465,10 @@ const L = [
   {d:4,s:2,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.',sub:1},
   {d:4,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
   {d:4,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
-  {d:4,s:4,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
-  {d:4,s:4,w:0,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:2},
+  {d:4,s:4,w:2,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
+  {d:4,s:4,w:1,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:2},
+  {d:4,s:4,w:1,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:1,guess:1},
+  {d:4,s:4,w:2,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:2,guess:1},
   {d:4,s:5,w:1,t:'пр',n:'ОИЗ. Математика',r:'ауд. 220, к. 6',p:'Тульев В.В.',unsure:1},
 
   {d:5,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 12, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:1},
@@ -387,7 +484,17 @@ const L = [
   {d:6,s:3,w:2,t:'пр',n:'Введение в инженерное образование',r:'ауд. 307, к. 6',p:'преподаватель не назначен'}
 ];
 const TYPE = { 'лек': 'Лекция', 'пр': 'Практика', 'лаб': 'Лабораторная', 'кур': 'Кураторский час' };
+const TICON = { 'лек': 'book', 'пр': 'pencil', 'лаб': 'flask', 'кур': 'user' };
 const $ = id => document.getElementById(id);
+function logoSvg(u) {
+  return '<svg viewBox="0 0 512 512" role="img" aria-label="Пары и сон"><defs><linearGradient id="lg' + u + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A5FE0"/><stop offset="1" stop-color="#1B2578"/></linearGradient>' +
+    '<mask id="lm' + u + '"><rect width="512" height="512" fill="#fff"/><circle cx="300" cy="196" r="98" fill="#000"/></mask></defs>' +
+    '<rect width="512" height="512" rx="116" fill="url(#lg' + u + ')"/>' +
+    '<circle cx="232" cy="212" r="120" fill="#F4F6FF" mask="url(#lm' + u + ')"/>' +
+    '<path d="M360 104l10 26 26 10-26 10-10 26-10-26-26-10 26-10z" fill="#FFC261"/>' +
+    '<rect x="116" y="352" width="280" height="24" rx="12" fill="#FFC261"/><rect x="116" y="390" width="196" height="24" rx="12" fill="#F4F6FF" fill-opacity=".85"/><rect x="116" y="428" width="236" height="24" rx="12" fill="#F4F6FF" fill-opacity=".5"/></svg>';
+}
+const ic = (n, c) => '<svg class="ic' + (c ? ' ' + c : '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
 const pad = n => String(n).padStart(2, '0');
 const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -404,27 +511,39 @@ function weekNo(d) {
 }
 const fmtDay = d => d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
 const cyc = n => n === 1 ? 'цикл' : (n >= 2 && n <= 4 ? 'цикла' : 'циклов');
+const pairWord = n => n === 1 ? 'пара' : (n >= 2 && n <= 4 ? 'пары' : 'пар');
 const wdayName = d => d.toLocaleDateString('ru-RU', { weekday: 'long' });
 
-const DEF = { pal: 'indigo', theme: 'auto', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00' };
+const DEF = { sub: 0, pal: 'indigo', theme: 'auto', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00' };
 let S = { ...DEF };
 let skipped = {};
-try { const j = JSON.parse(localStorage.getItem('rasp-settings')); if (j) S = { ...DEF, ...j }; } catch (e) {}
-try { skipped = JSON.parse(localStorage.getItem('rasp-skipped')) || {}; } catch (e) {}
+// Хранение: память страницы (localStorage), копия в cookie на год. Читаем первое, что нашлось.
+function cookieGet() {
+  try { const m = document.cookie.match(/(?:^|; )rasp_state=([^;]*)/); return m ? JSON.parse(decodeURIComponent(m[1])) : null; } catch (e) { return null; }
+}
+function cookieSet(obj) {
+  try { const v = encodeURIComponent(JSON.stringify(obj)); if (v.length < 3800) document.cookie = 'rasp_state=' + v + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {}
+}
+let loaded = null;
+try { const a = JSON.parse(localStorage.getItem('rasp-settings')), b = JSON.parse(localStorage.getItem('rasp-skipped')); if (a) loaded = { S: a, skipped: b || {} }; } catch (e) {}
+if (!loaded) loaded = cookieGet();
+if (loaded && loaded.S) { S = { ...DEF, ...loaded.S }; skipped = loaded.skipped || {}; }
 S.mode = ['early', 'late', 'custom'].includes(S.mode) ? S.mode : 'early';
 if (!S.leadDay || typeof S.leadDay !== 'object') S.leadDay = {};
 if (S.prep === 90) S.prep = 60;
 if (S.wake === '09:00') S.wake = '10:00';
-delete S.sub;
+S.sub = [0, 1, 2].includes(Number(S.sub)) ? Number(S.sub) : 0;
+delete S.view;
 const save = () => {
   try { localStorage.setItem('rasp-settings', JSON.stringify(S)); localStorage.setItem('rasp-skipped', JSON.stringify(skipped)); } catch (e) {}
+  cookieSet({ S, skipped });
 };
 
 const counted = e => !(e.unsure && S.unsure);
 function classes(d) {
   const n = dow(d), w = weekNo(d);
   if (n > 6 || HOLIDAYS[iso(d)] || skipped[iso(d)]) return [];
-  return L.filter(e => e.d === n && (e.w === 0 || e.w === w)).sort((a, b) => a.s - b.s);
+  return L.filter(e => e.d === n && (e.w === 0 || e.w === w) && (!e.sub || !S.sub || e.sub === S.sub)).sort((a, b) => a.s - b.s);
 }
 // Подъём зависит от первой пары дня.
 // Впритык: за S.prep минут до пары. Пораньше: за 3 часа до пары, но между 9:00 и 10:00, и не позже чем за 1,5 часа до пары.
@@ -453,14 +572,14 @@ function plan(d, mode) {
 function keepFocus(fn) {
   const a = document.activeElement, id = a && a.id;
   fn();
-  if (id) { const e = document.getElementById(id); if (e) { e.focus(); } }
+  if (id) { const e = document.getElementById(id); if (e) e.focus(); }
 }
 const at = (d, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, Math.round(m));
 
 let weekOffset = 0;
 let sel = new Date();
 sel = dow(sel) > 6 ? addDays(sel, 1) : sel;
-let ctx = null; // ближайший подъём: { d, p, wakeAt }
+let ctx = null; // ближайший подъём: { d, p, wakeAt, now }
 
 function findTarget() {
   const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -470,6 +589,29 @@ function findTarget() {
     if (at(d, p.wake) > now) break;
   }
   ctx = { d, p, wakeAt: at(d, p.wake), now };
+}
+
+function nightHtml() {
+  const { d, p, wakeAt, now } = ctx;
+  let h = '<div class="night-row"><label for="n-until">Освобожусь в</label><input id="n-until" type="time" value="' + S.until + '"></div>';
+  const [uh, um] = S.until.split(':').map(Number);
+  let stop = new Date(wakeAt.getFullYear(), wakeAt.getMonth(), wakeAt.getDate(), uh, um);
+  if (stop >= wakeAt) stop = new Date(stop.getFullYear(), stop.getMonth(), stop.getDate() - 1, uh, um);
+  const sleepStart = new Date(stop.getTime() + S.fall * 6e4);
+  const sleepMin = Math.max(0, (wakeAt - sleepStart) / 6e4);
+  const cycles = Math.floor(sleepMin / 90);
+  const stop5 = new Date(wakeAt.getTime() - (5 * 90 + S.fall) * 6e4), stop4 = new Date(wakeAt.getTime() - (4 * 90 + S.fall) * 6e4);
+  let cls, title, tips = [];
+  if (stop < now) { cls = 'mid'; title = 'Это время уже прошло'; tips.push('Выберите время окончания позже текущего.'); }
+  else {
+    if (sleepMin >= 450) { cls = 'good'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Хватает.'; }
+    else if (sleepMin >= 360) { cls = 'mid'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Терпимо.'; tips.push('Днём может клонить в сон. Кофе лучше не позже ' + hmDate(new Date(wakeAt.getTime() + 6 * 36e5)) + '.'); }
+    else { cls = 'bad'; title = 'Сон ' + dur(sleepMin) + (cycles ? ', ' + cycles + ' ' + cyc(cycles) : '') + '. Мало.'; tips.push('Такой недосып скажется на парах. Не повторяйте две такие ночи подряд.'); tips.push('Если будет окно между парами, поспите 20–30 минут, но не позже 16:00, чтобы не сбить следующую ночь.'); }
+    if (p.cs.length && sleepMin < 450 && S.mode !== 'late') tips.push('Подъём можно сдвинуть на «впритык» (' + hm(plan(d, 'late').wake) + '), если успеваете собраться быстрее.');
+    tips.push('Чтобы выспаться по плану, освободиться нужно до ' + hmDate(stop5) + ' (5 циклов). Минимум, 4 цикла, до ' + hmDate(stop4) + '.');
+    tips.push('За 30–60 минут до конца включите ночной режим на экране и приглушите свет.');
+  }
+  return h + '<div class="verdict ' + cls + '"><b>' + title + '</b><ul>' + tips.map(t => '<li>' + t + '</li>').join('') + '</ul></div>';
 }
 
 function renderHero() {
@@ -483,17 +625,21 @@ function renderHero() {
     ? 'Первая пара ' + p.first + ', подъём ' + (S.mode === 'late' ? 'впритык, за ' + S.prep + ' мин до неё.' : S.mode === 'custom' ? 'за ' + leadFor(dow(d)) + ' мин до неё.' : 'пораньше, с запасом.')
     : 'В этот день пар нет, подъём ' + hm(p.wake) + '.';
   $('hero').innerHTML =
-    '<p class="hero-top">Ближайший подъём: ' + wdayName(d) + ', ' + d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '</p>' +
-    '<div class="pair"><div class="half bed"><div class="lab">Отбой</div><div class="big">' + hm(p.bed) + '</div><div class="sub">сон ' + String(S.sleep).replace('.', ',') + ' ч</div></div>' +
-    '<div class="half wake"><div class="lab">Подъём</div><div class="big">' + hm(p.wake) + '</div><div class="sub">' + (p.cs.length ? 'пары с ' + p.first : 'пар нет') + '</div></div></div>' +
-    '<p class="hero-note">' + note + ' ' + why + '</p>';
+    '<div class="hero-head">' + ic('alarm') + '<span>Ближайший подъём: ' + wdayName(d) + ', ' + d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '</span></div>' +
+    '<div class="pair"><div class="half bed"><div class="lab">' + ic('moon') + 'Отбой</div><div class="big">' + hm(p.bed) + '</div><div class="sub">сон ' + String(S.sleep).replace('.', ',') + ' ч</div></div>' +
+    '<div class="half wake"><div class="lab">' + ic('sun') + 'Подъём</div><div class="big">' + hm(p.wake) + '</div><div class="sub">' + (p.cs.length ? 'пары с ' + p.first : 'пар нет') + '</div></div></div>' +
+    '<p class="hero-note">' + note + ' ' + why + '</p>' +
+    '<div class="nightbox"><button class="nightbtn" id="n-on" type="button" aria-pressed="' + S.night + '">' + ic('moon') + '<span>Ночная занятость</span><span class="tog" aria-hidden="true"></span></button>' + (S.night ? nightHtml() : '') + '</div>';
+  $('n-on').addEventListener('click', () => { S.night = !S.night; save(); renderHero(); });
+  const nu = $('n-until');
+  if (nu) nu.addEventListener('input', ev => { if (ev.target.value) { S.until = ev.target.value; save(); keepFocus(renderHero); } });
 }
 
 const CYC = [[6, 'С запасом'], [5, 'Идеал'], [4, 'Минимум'], [3, 'Аварийный']];
 function renderVariants() {
   const { d, p } = ctx;
   const earlyP = plan(d, 'early'), lateP = plan(d, 'late'), customP = plan(d, 'custom');
-  let h = '<h2>Когда ложиться: варианты</h2>' +
+  let h = '<h2>' + ic('sparkles') + 'Когда ложиться</h2>' +
     '<p class="hint">Время зависит от дня: считается от первой пары' + (p.cs.length ? ' (' + wdayName(d) + ', ' + p.first + ')' : ', в ' + wdayName(d) + ' пар нет') + '. Сон идёт циклами примерно по 90 минут, проснуться в конце цикла легче.</p>';
   h += '<div class="seg"><button class="btn" type="button" data-mode="early" aria-pressed="' + (S.mode === 'early') + '">Пораньше<small>подъём ' + hm(earlyP.wake) + '</small></button>' +
        '<button class="btn" type="button" data-mode="late" aria-pressed="' + (S.mode === 'late') + '">Впритык<small>' + hm(lateP.wake) + (lateP.cs.length ? ', за ' + S.prep + ' мин' : ', пар нет') + '</small></button>' +
@@ -518,69 +664,52 @@ function renderVariants() {
     const hrs = c[0] * 1.5;
     h += row(hrs, c[1], c[0] + ' ' + cyc(c[0]) + ', ' + dur(hrs * 60), c[0] <= 4);
   });
-  h += '</div><p class="note">Нажмите на вариант, и он станет основным в плане и вверху страницы. Отбой учитывает, что вы засыпаете за ' + S.fall + ' мин.</p>';
-  $('variants').innerHTML = h;
-  $('variants').querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); render(); }));
-  $('variants').querySelectorAll('[data-lead]').forEach(b => b.addEventListener('click', () => { S.lead = Number(b.dataset.lead); save(); render(); }));
+  h += '</div><p class="note">Нажмите на вариант, и он станет основным в плане и в карточке выше. Отбой учитывает, что вы засыпаете за ' + S.fall + ' мин.</p>';
+  const box = $('sp-var');
+  box.innerHTML = h;
+  box.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); render(); }));
+  box.querySelectorAll('[data-lead]').forEach(b => b.addEventListener('click', () => { S.lead = Number(b.dataset.lead); save(); render(); }));
   const li = $('lead-in');
   if (li) li.addEventListener('input', ev => { if (ev.target.value === '') return; S.lead = Math.max(0, Math.min(600, Number(ev.target.value))); save(); keepFocus(render); });
-  $('variants').querySelectorAll('[data-fall]').forEach(b => b.addEventListener('click', () => { S.fall = Number(b.dataset.fall); save(); fillForm(); render(); }));
-  $('variants').querySelectorAll('[data-sleep]').forEach(b => b.addEventListener('click', () => { S.sleep = Number(b.dataset.sleep); save(); fillForm(); render(); }));
-}
-
-function renderNight() {
-  const { d, p, wakeAt, now } = ctx;
-  let h = '<h2>Ночная занятость</h2>' +
-    '<p class="hint">Если ночью чем-то заняты, посмотрите, сколько останется на сон до подъёма ' + wdayName(d) + ' в ' + hm(p.wake) + '.</p>' +
-    '<label class="switch-line" for="n-on"><input id="n-on" type="checkbox"' + (S.night ? ' checked' : '') + '><span>Сегодня ночью я занят</span></label>';
-  if (S.night) {
-    h += '<div class="night-row"><div class="field"><label for="n-until">Освобожусь в</label><input id="n-until" type="time" value="' + S.until + '"></div></div>';
-    const [uh, um] = S.until.split(':').map(Number);
-    let stop = new Date(wakeAt.getFullYear(), wakeAt.getMonth(), wakeAt.getDate(), uh, um);
-    if (stop >= wakeAt) stop = new Date(stop.getFullYear(), stop.getMonth(), stop.getDate() - 1, uh, um);
-    const sleepStart = new Date(stop.getTime() + S.fall * 6e4);
-    const sleepMin = Math.max(0, (wakeAt - sleepStart) / 6e4);
-    const cycles = Math.floor(sleepMin / 90);
-    const stop5 = new Date(wakeAt.getTime() - (5 * 90 + S.fall) * 6e4), stop4 = new Date(wakeAt.getTime() - (4 * 90 + S.fall) * 6e4);
-    let cls, title, tips = [];
-    if (stop < now) { cls = 'mid'; title = 'Это время уже прошло'; tips.push('Выберите время окончания позже текущего.'); }
-    else {
-      if (sleepMin >= 450) { cls = 'good'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Хватает.'; }
-      else if (sleepMin >= 360) { cls = 'mid'; title = 'Сон ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + '. Терпимо.'; tips.push('Днём может клонить в сон. Кофе лучше не позже ' + hmDate(new Date(wakeAt.getTime() + 6 * 36e5)) + '.'); }
-      else { cls = 'bad'; title = 'Сон ' + dur(sleepMin) + (cycles ? ', ' + cycles + ' ' + cyc(cycles) : '') + '. Мало.'; tips.push('Такой недосып скажется на парах. Не повторяйте две такие ночи подряд.'); tips.push('Если будет окно между парами, поспите 20–30 минут, но не позже 16:00, чтобы не сбить следующую ночь.'); }
-      if (p.cs.length && sleepMin < 450 && S.mode !== 'late') tips.push('Подъём можно сдвинуть на «впритык» (' + hm(plan(d, 'late').wake) + '), если успеваете собраться быстрее.');
-      tips.push('Чтобы выспаться по плану, освободиться нужно до ' + hmDate(stop5) + ' (5 циклов). Минимум, 4 цикла, до ' + hmDate(stop4) + '.');
-      tips.push('За 30–60 минут до конца включите ночной режим на экране и приглушите свет.');
-    }
-    h += '<div class="verdict ' + cls + '"><b>' + title + '</b><ul>' + tips.map(t => '<li>' + t + '</li>').join('') + '</ul></div>';
-  }
-  $('night').innerHTML = h;
-  $('n-on').addEventListener('change', ev => { S.night = ev.target.checked; save(); renderNight(); });
-  const nu = $('n-until');
-  if (nu) nu.addEventListener('input', ev => { if (ev.target.value) { S.until = ev.target.value; save(); renderNightKeep(); } });
-}
-
-function renderNightKeep() {
-  const active = document.activeElement && document.activeElement.id === 'n-until';
-  renderNight();
-  if (active) { const e = $('n-until'); if (e) e.focus(); }
+  box.querySelectorAll('[data-fall]').forEach(b => b.addEventListener('click', () => { S.fall = Number(b.dataset.fall); save(); fillForm(); render(); }));
+  box.querySelectorAll('[data-sleep]').forEach(b => b.addEventListener('click', () => { S.sleep = Number(b.dataset.sleep); save(); fillForm(); render(); }));
 }
 
 function renderCues() {
   const { d, p } = ctx;
   const bedAt = at(d, p.bed);
-  const cue = (k, v) => '<div class="cue"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+  const cue = (icon, k, v) => '<div class="cue"><div class="k">' + ic(icon) + '<span>' + k + '</span></div><div class="v">' + v + '</div></div>';
   $('cues').innerHTML =
-    cue('Последний кофе или энергетик до', hmDate(new Date(bedAt.getTime() - 8 * 36e5))) +
-    cue('Выключить яркие экраны с', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
-    cue('Выгрузить мысли на бумагу в', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
-    cue('Лечь в кровать в', hm(p.bed));
+    cue('coffee', 'Последний кофе или энергетик до', hmDate(new Date(bedAt.getTime() - 8 * 36e5))) +
+    cue('phone', 'Выключить яркие экраны с', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('pencil', 'Выгрузить мысли на бумагу в', hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('bed', 'Лечь в кровать в', hm(p.bed));
 }
 
-function renderWeek() {
+function renderPlan() {
   const today = new Date();
   const mon = addDays(mondayOf(today), weekOffset * 7);
-  $('weekchip').textContent = weekNo(today) + ' нед. сейчас';
+  const modeName = S.mode === 'late' ? 'Впритык' : S.mode === 'custom' ? 'Своё' : 'Пораньше';
+  $('week-hint').textContent = 'Режим: ' + modeName + ', неделя ' + weekNo(mon) + '. Меняется на вкладке «Расписание».';
+  let rows = '<tr><th>День</th><th>Пары</th><th>Подъём</th><th>Отбой</th></tr>';
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i), p = plan(d), k = iso(d);
+    const cur = k === iso(sel) ? ' class="cur"' : '';
+    const pairs = p.cs.length ? p.first + '–' + p.last : (HOLIDAYS[k] ? 'праздник' : skipped[k] ? 'вас нет' : 'нет пар');
+    rows += '<tr' + cur + '><td>' + DAYS[i] + ', ' + d.getDate() + '</td><td class="m">' + pairs + '</td><td class="m">' + hm(p.wake) + '</td><td class="m">' + hm(p.bed) + '</td></tr>';
+  }
+  $('plan').innerHTML = rows;
+}
+
+function renderSub() {
+  $('subsel').innerHTML = '<span class="sublbl">' + ic('user') + 'Подгруппа</span>' +
+    [[0, 'Обе'], [1, '1'], [2, '2']].map(o => '<button type="button" data-subpick="' + o[0] + '" aria-pressed="' + (S.sub === o[0]) + '">' + o[1] + '</button>').join('');
+  $('subsel').querySelectorAll('[data-subpick]').forEach(b => b.addEventListener('click', () => { S.sub = Number(b.dataset.subpick); save(); render(); }));
+}
+function renderSched() {
+  renderSub();
+  const today = new Date();
+  const mon = addDays(mondayOf(today), weekOffset * 7);
   const sw = $('weekswitch');
   sw.innerHTML = '';
   [0, 1].forEach(o => {
@@ -604,37 +733,41 @@ function renderWeek() {
     b.addEventListener('click', () => { sel = d; render(); });
     tabs.appendChild(b);
   }
-  let rows = '<tr><th>День</th><th>Пары</th><th>Подъём</th><th>Отбой</th></tr>';
-  for (let i = 0; i < 6; i++) {
-    const d = addDays(mon, i), p = plan(d), k = iso(d);
-    const cur = k === iso(sel) ? ' class="cur"' : '';
-    const pairs = p.cs.length ? p.first + '–' + p.last : (HOLIDAYS[k] ? 'праздник' : skipped[k] ? 'вас нет' : 'нет пар');
-    rows += '<tr' + cur + '><td>' + DAYS[i] + ', ' + d.getDate() + '</td><td class="m">' + pairs + '</td><td class="m">' + hm(p.wake) + '</td><td class="m">' + hm(p.bed) + '</td></tr>';
-  }
-  $('plan').innerHTML = rows;
+  renderDay();
 }
 
 function renderDay() {
   const now = new Date(), k = iso(sel), isToday = k === iso(now);
   const nowM = now.getHours() * 60 + now.getMinutes();
-  const w = weekNo(sel);
-  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><span>' + w + ' неделя</span></div>';
   const cs = classes(sel);
-  if (HOLIDAYS[k]) h += '<div class="empty">Праздничный день: ' + HOLIDAYS[k] + '. Пар нет.</div>';
-  else if (skipped[k]) h += '<div class="empty">Вы отметили, что в этот день вас нет на парах.</div>';
-  else if (!cs.length) h += '<div class="empty">В этот день пар нет.</div>';
   const groups = [];
   cs.forEach(e => {
     let g = groups.find(x => x.s === e.s);
     if (!g) { g = { s: e.s, items: [] }; groups.push(g); }
     g.items.push(e);
   });
+  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><div class="sumrow">' +
+    '<span class="pill">' + ic('calendar') + weekNo(sel) + ' неделя</span>';
+  if (groups.length) {
+    h += '<span class="pill">' + ic('list') + groups.length + ' ' + pairWord(groups.length) + '</span>' +
+      '<span class="pill">' + ic('clock') + SLOTS[groups[0].s][0] + '–' + SLOTS[groups[groups.length - 1].s][1] + '</span>';
+    if (isToday) {
+      const nx = groups.find(g => mins(SLOTS[g.s][0]) > nowM);
+      if (nx) h += '<span class="pill hl">' + ic('alarm') + 'дальше в ' + SLOTS[nx.s][0] + ', через ' + dur(mins(SLOTS[nx.s][0]) - nowM) + '</span>';
+    }
+  }
+  h += '</div></div>';
+  if (HOLIDAYS[k]) h += '<div class="empty">' + ic('sun') + '<span>Праздничный день: ' + HOLIDAYS[k] + '. Пар нет.</span></div>';
+  else if (skipped[k]) h += '<div class="empty">' + ic('off') + '<span>Вы отметили, что в этот день вас нет на парах.</span></div>';
+  else if (!cs.length) h += '<div class="empty">' + ic('sun') + '<span>В этот день пар нет.</span></div>';
   const item = e => {
-    const meta = [e.r, e.p].filter(Boolean).join(' · ');
-    let chips = '<span class="chip t">' + TYPE[e.t] + '</span>';
+    const meta = (e.r ? '<span>' + ic('pin') + e.r + '</span>' : '') + (e.p ? '<span>' + ic('user') + e.p + '</span>' : '');
+    let chips = '<span class="chip">' + TYPE[e.t] + '</span>';
     if (e.unsure) chips += '<span class="chip warn">без дат, уточнить</span>';
-    const joke = e.t === 'лек' ? '<div class="joke">Примечание: это пара игры в Клеш Рояль</div>' : '';
-    return '<div class="subj">' + e.n + '</div>' + (meta ? '<div class="meta">' + meta + '</div>' : '') + joke + '<div class="chips">' + chips + '</div>';
+    if (e.guess) chips += '<span class="chip warn">предположение, уточнить</span>';
+    const joke = e.t === 'лек' ? '<div class="joke">' + ic('gamepad') + 'Примечание: это пара игры в Клеш Рояль</div>' : '';
+    return '<div class="subj"><span class="tbadge" data-t="' + e.t + '">' + ic(TICON[e.t]) + '</span><span>' + e.n + '</span></div>' +
+      (meta ? '<div class="meta">' + meta + '</div>' : '') + joke + '<div class="chips">' + chips + '</div>';
   };
   let prevEnd = null;
   groups.forEach(g => {
@@ -646,30 +779,31 @@ function renderDay() {
     const dim = g.items.every(e => !counted(e));
     let inner = '';
     if (g.items.some(e => e.sub)) {
-      [1, 2].forEach(n => {
+      (S.sub ? [S.sub] : [1, 2]).forEach(n => {
         const it = g.items.find(e => e.sub === n);
-        inner += '<div class="subrow"><span class="chip warn lab">Подгруппа ' + n + '</span>' + (it ? item(it) : '<div class="meta">пары нет</div>') + '</div>';
+        inner += '<div class="subrow"><span class="sublab">Подгруппа ' + n + '</span>' + (it ? item(it) : '<div class="nopair">пары нет</div>') + '</div>';
       });
     } else inner = g.items.map(item).join('');
     h += '<div class="card' + (live ? ' now' : '') + (past ? ' past' : '') + (dim ? ' dim' : '') + '"><div class="time"><span>' + a + '</span><span>' + b + '</span>' + (live ? '<span class="flag">идёт сейчас</span>' : '') + '</div><div class="body">' + inner + '</div></div>';
   });
-  if (!HOLIDAYS[k]) h += '<button class="skipbtn" id="skipbtn" type="button">' + (skipped[k] ? 'Вернуть пары на этот день' : 'Меня нет на парах в этот день') + '</button>';
+  if (!HOLIDAYS[k]) h += '<button class="skipbtn" id="skipbtn" type="button">' + (skipped[k] ? ic('undo') + 'Вернуть пары на этот день' : ic('off') + 'Меня нет на парах в этот день') + '</button>';
   $('day').innerHTML = h;
   const sb = $('skipbtn');
   if (sb) sb.addEventListener('click', () => { if (skipped[k]) delete skipped[k]; else skipped[k] = 1; save(); render(); });
 }
 
-function render() { renderHero(); renderVariants(); renderNight(); renderCues(); renderWeek(); renderDay(); }
+function render() { renderHero(); renderVariants(); renderCues(); renderPlan(); renderSched(); }
 
-
+// Оформление: кнопка в шапке, режим и палитры без названий
 const PALS = [
-  { id: 'indigo', name: 'Индиго', sw: ['#3445BF', '#B85F00'] },
-  { id: 'ocean', name: 'Океан', sw: ['#0B6E80', '#C2410C'] },
-  { id: 'forest', name: 'Лес', sw: ['#2F6B3F', '#A8590A'] },
-  { id: 'rose', name: 'Роза', sw: ['#A8286B', '#B4530F'] },
-  { id: 'graphite', name: 'Графит', sw: ['#2E3138', '#8A6A00'] }
+  { id: 'indigo', sw: ['#3445BF', '#B85F00'] }, { id: 'ocean', sw: ['#0B6E80', '#C2410C'] },
+  { id: 'forest', sw: ['#2F6B3F', '#A8590A'] }, { id: 'rose', sw: ['#A8286B', '#B4530F'] },
+  { id: 'graphite', sw: ['#2E3138', '#8A6A00'] }, { id: 'violet', sw: ['#5D259D', '#966708'] },
+  { id: 'teal', sw: ['#1D7C72', '#962408'] }, { id: 'crimson', sw: ['#9D2539', '#966208'] },
+  { id: 'amber', sw: ['#9D6D25', '#960D08'] }, { id: 'olive', sw: ['#597C1D', '#963C08'] },
+  { id: 'coffee', sw: ['#9D5525', '#085B96'] }, { id: 'sky', sw: ['#25659D', '#964F08'] }
 ];
-const THEMES = [['auto', 'Авто'], ['light', 'Светлый'], ['dark', 'Тёмный']];
+const THEMES = [['auto', 'Авто', 'auto'], ['light', 'Светлый', 'sun'], ['dark', 'Тёмный', 'moon']];
 let themeTouched = false;
 function applyLook() {
   const r = document.documentElement;
@@ -678,11 +812,18 @@ function applyLook() {
   else if (themeTouched) { r.removeAttribute('data-theme'); themeTouched = false; }
 }
 function renderLook() {
-  $('theme-seg').innerHTML = THEMES.map(t => '<button class="btn" type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (S.theme === t[0]) + '">' + t[1] + '</button>').join('');
-  $('pals').innerHTML = PALS.map(p => '<button class="swatch" type="button" data-pal="' + p.id + '" aria-pressed="' + (S.pal === p.id) + '"><span class="dots"><i style="background:' + p.sw[0] + '"></i><i style="background:' + p.sw[1] + '"></i></span><span>' + p.name + '</span></button>').join('');
+  $('theme-seg').innerHTML = THEMES.map(t => '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (S.theme === t[0]) + '">' + ic(t[2]) + t[1] + '</button>').join('');
+  $('pals').innerHTML = PALS.map((p, i) => '<button class="sw" type="button" data-pal="' + p.id + '" aria-label="Палитра ' + (i + 1) + '" aria-pressed="' + (S.pal === p.id) + '" style="background:linear-gradient(135deg,' + p.sw[0] + ' 50%,' + (p.sw[1] || p.sw[0]) + ' 50%)"></button>').join('');
   document.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.themePick; save(); applyLook(); renderLook(); }));
   document.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => { S.pal = b.dataset.pal; save(); applyLook(); renderLook(); }));
 }
+function setLookOpen(open) {
+  $('lookpop').hidden = !open;
+  $('look-btn').setAttribute('aria-expanded', String(open));
+}
+$('look-btn').addEventListener('click', ev => { ev.stopPropagation(); setLookOpen($('lookpop').hidden); });
+document.addEventListener('click', ev => { if (!$('lookpop').hidden && !ev.composedPath().includes($('lookpop'))) setLookOpen(false); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') setLookOpen(false); });
 
 function fillForm() {
   $('f-wake').value = S.wake;
@@ -711,7 +852,7 @@ function bind() {
   }));
   $('f-wake').addEventListener('input', ev => { if (ev.target.value) { S.wake = ev.target.value; save(); render(); } });
   $('f-unsure').addEventListener('change', ev => { S.unsure = ev.target.checked; save(); render(); });
-  $('f-reset').addEventListener('click', () => { S = { ...DEF, leadDay: {}, pal: S.pal, theme: S.theme }; save(); fillForm(); names.forEach((n, i) => { $('ld-' + (i + 1)).value = ''; }); render(); });
+  $('f-reset').addEventListener('click', () => { S = { ...DEF, leadDay: {}, pal: S.pal, theme: S.theme, sub: S.sub }; save(); fillForm(); names.forEach((n, i) => { $('ld-' + (i + 1)).value = ''; }); render(); });
 }
 
 // Дыхание 4-7-8
@@ -731,7 +872,7 @@ function brStop(done) {
   const c = $('brc'); c.style.transitionDuration = reduce ? '0s' : '1.5s'; c.style.transform = 'scale(.55)';
   $('brph').textContent = done ? 'Готово' : 'Пауза'; $('brsec').textContent = '4-7-8';
   $('brsub').textContent = done ? 'Четыре цикла закончились. Если сна нет, повторите или попробуйте другой способ.' : 'Нажмите «Начать», когда будете готовы.';
-  $('brbtn').textContent = done ? 'Ещё раз' : 'Начать';
+  $('brbtn').innerHTML = ic('play') + (done ? 'Ещё раз' : 'Начать');
 }
 function brTick() {
   br.left -= 1;
@@ -751,21 +892,41 @@ $('brbtn').addEventListener('click', () => {
 });
 $('d-breath').addEventListener('toggle', () => { if (!$('d-breath').open && br.on) brStop(false); });
 
+// Вкладки
+const SUBS = [['var', 'sparkles', 'Варианты'], ['week', 'list', 'Неделя'], ['tips', 'wind', 'Уснуть'], ['set', 'sliders', 'Настройки']];
+let sub = 'var';
+function showSub(t) {
+  sub = t;
+  SUBS.forEach(s => { $('sp-' + s[0]).hidden = s[0] !== t; });
+  document.querySelectorAll('#subnav [data-sub]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sub === t)));
+  if (t !== 'tips' && br.on) brStop(false);
+}
 function showTab(t) {
-  $('tab-sleep').hidden = t !== 'sleep';
   $('tab-sched').hidden = t !== 'sched';
-  $('mt-sleep').setAttribute('aria-pressed', String(t === 'sleep'));
+  $('tab-sleep').hidden = t !== 'sleep';
   $('mt-sched').setAttribute('aria-pressed', String(t === 'sched'));
+  $('mt-sleep').setAttribute('aria-pressed', String(t === 'sleep'));
   if (t !== 'sleep' && br.on) brStop(false);
   try { window.scrollTo(0, 0); } catch (e) {}
 }
+$('logo').innerHTML = logoSvg('h');
+$('inst-logo').innerHTML = logoSvg('i');
+$('look-btn').innerHTML = ic('palette');
+$('mt-sched').innerHTML = ic('calendar') + 'Расписание';
+$('mt-sleep').innerHTML = ic('moon') + 'Сон';
+$('brbtn').innerHTML = ic('play') + 'Начать';
+$('subnav').innerHTML = SUBS.map(s => '<button type="button" data-sub="' + s[0] + '" aria-pressed="false">' + ic(s[1]) + '<span>' + s[2] + '</span></button>').join('');
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+document.querySelectorAll('#subnav [data-sub]').forEach(b => b.addEventListener('click', () => showSub(b.dataset.sub)));
+
 applyLook();
 renderLook();
 bind();
 render();
-showTab('sleep');
+showSub('var');
+showTab('sched');
 setInterval(() => { if (document.activeElement && /^(INPUT|SELECT)$/.test(document.activeElement.tagName)) return; renderHero(); renderCues(); renderDay(); }, 60000);
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 </script>
-
-</body></html>
+</body>
+</html>
