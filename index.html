@@ -138,9 +138,9 @@ footer { font-size: 12.5px; color: var(--muted); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .panel h2 { margin: 0; font-size: 16px; font-weight: 600; }
 .panel .hint { margin: 0; font-size: 13px; color: var(--muted); }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .seg .btn { text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.seg .btn small { font-size: 12px; opacity: .8; }
+.seg .btn small { font-size: 11.5px; opacity: .8; line-height: 1.25; }
 .mini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
 .mini .lbl { color: var(--muted); }
 .mini .btn { padding: 5px 10px; font-size: 13px; font-family: var(--f-mono); }
@@ -177,6 +177,12 @@ footer { font-size: 12.5px; color: var(--muted); }
 .cue { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); }
 .cue .k { font-size: 12px; color: var(--muted); }
 .cue .v { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.joke { margin-top: 2px; font-size: 13px; font-style: italic; color: var(--dawn); }
+.leadin { width: 84px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.daygrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.daygrid label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.daygrid input { width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.field.wide { grid-column: 1 / -1; }
 .subrow { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
 .subrow + .subrow { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
 .subrow .chip.lab { margin-bottom: 2px; }
@@ -209,6 +215,9 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
 .dots { display: inline-flex; flex: none; }
 .dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface); }
 .dots i + i { margin-left: -6px; }
+[hidden] { display: none !important; }
+.tabpane { display: flex; flex-direction: column; gap: 20px; }
+.maintabs button { padding: 11px 10px; font-weight: 600; font-size: 15px; }
 </style>
 
 <main class="wrap">
@@ -220,6 +229,91 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
     <span class="weekchip" id="weekchip"></span>
   </header>
 
+  <div class="switch maintabs" id="maintabs" role="tablist">
+    <button type="button" role="tab" id="mt-sleep" data-tab="sleep" aria-pressed="true">Сон</button>
+    <button type="button" role="tab" id="mt-sched" data-tab="sched" aria-pressed="false">Расписание</button>
+  </div>
+
+  <div class="tabpane" id="tab-sleep" role="tabpanel" aria-labelledby="mt-sleep">
+  <section class="hero" id="hero" aria-live="polite"></section>
+
+  
+
+  <section class="panel" id="variants"></section>
+
+  
+
+  <section class="panel" id="night"></section>
+
+  
+
+  <section>
+      <h3>План на неделю</h3>
+      <div class="tablewrap"><table id="plan"></table></div>
+    </section>
+
+  
+
+  <section class="panel" id="sleeptips">
+      <h2>Не получается уснуть</h2>
+      <p class="hint">Что сделать до отбоя и что попробовать, если лежите и не спите. Это общие советы, не лечение.</p>
+      <div class="cues" id="cues"></div>
+      <div class="tech">
+        <details id="d-breath">
+          <summary>Дыхание 4-7-8, 4 цикла</summary>
+          <p>Сядьте или лягте удобно. Вдох носом 4 секунды, пауза 7, медленный выдох ртом 8. Если закружится голова, дышите как обычно.</p>
+          <div class="brwrap">
+            <div class="brc" id="brc"><span class="ph" id="brph">Готово</span><span class="sec" id="brsec">4-7-8</span></div>
+            <div class="brsub" id="brsub">Нажмите «Начать» и следите за кругом.</div>
+            <button class="btn pri" id="brbtn" type="button">Начать</button>
+          </div>
+        </details>
+        <details>
+          <summary>Расслабление мышц по очереди</summary>
+          <ol>
+            <li>Лягте на спину. Сожмите стопы на 5 секунд, потом отпустите на 10–15.</li>
+            <li>Так же двигайтесь вверх: голени, бёдра, живот, кисти, плечи.</li>
+            <li>В конце напрягите и расслабьте лицо: брови, челюсть, лоб.</li>
+            <li>Весь круг занимает 10–15 минут. Между группами мышц дышите ровно.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>Слова на выбранную букву</summary>
+          <p>Это способ отвлечь голову от мыслей. Выберите нейтральное слово, например «звезда». На каждую букву придумывайте слова: на «з» это зима, забор, зонт. Представляйте каждое слово несколько секунд и переходите к следующему. Не связывайте слова в историю.</p>
+        </details>
+        <details>
+          <summary>Если лежите больше 20 минут</summary>
+          <ul>
+            <li>Не смотрите на часы и не заставляйте себя заснуть.</li>
+            <li>Встаньте, включите тусклый свет и займитесь чем-то тихим без экрана: книга, растяжка, тёплая вода.</li>
+            <li>Возвращайтесь в кровать, когда начнёт клонить в сон.</li>
+            <li>Кровать только для сна. Игры и телефон лёжа приучают мозг не спать там.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Выгрузить мысли на бумагу</summary>
+          <p>За час до отбоя на 5 минут запишите всё, что крутится в голове: дела на завтра, вопросы, тревоги. Когда это лежит на бумаге, голове проще отпустить.</p>
+        </details>
+        <details>
+          <summary>Когда нужен врач</summary>
+          <p>Если проблемы со сном держатся больше трёх недель или из-за них трудно учиться, стоит обратиться к врачу. Таблетки и добавки без назначения я не советую.</p>
+        </details>
+      </div>
+    </section>
+
+  
+  </div>
+
+  <div class="tabpane" id="tab-sched" role="tabpanel" aria-labelledby="mt-sched" hidden>
+  <section>
+      <div class="switch" id="weekswitch"></div>
+      <div class="tabs" id="tabs"></div>
+      <div class="day" id="day"></div>
+    </section>
+
+  
+  </div>
+
   <details class="look" id="look">
     <summary>Оформление</summary>
     <div class="body-in">
@@ -228,70 +322,6 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
     </div>
   </details>
 
-  <section class="hero" id="hero" aria-live="polite"></section>
-
-  <section class="panel" id="variants"></section>
-
-  <section class="panel" id="night"></section>
-
-  <section>
-    <div class="switch" id="weekswitch"></div>
-    <div class="tabs" id="tabs"></div>
-    <div class="day" id="day"></div>
-  </section>
-
-  <section>
-    <h3>План на неделю</h3>
-    <div class="tablewrap"><table id="plan"></table></div>
-  </section>
-
-  <section class="panel" id="sleeptips">
-    <h2>Не получается уснуть</h2>
-    <p class="hint">Что сделать до отбоя и что попробовать, если лежите и не спите. Это общие советы, не лечение.</p>
-    <div class="cues" id="cues"></div>
-    <div class="tech">
-      <details id="d-breath">
-        <summary>Дыхание 4-7-8, 4 цикла</summary>
-        <p>Сядьте или лягте удобно. Вдох носом 4 секунды, пауза 7, медленный выдох ртом 8. Если закружится голова, дышите как обычно.</p>
-        <div class="brwrap">
-          <div class="brc" id="brc"><span class="ph" id="brph">Готово</span><span class="sec" id="brsec">4-7-8</span></div>
-          <div class="brsub" id="brsub">Нажмите «Начать» и следите за кругом.</div>
-          <button class="btn pri" id="brbtn" type="button">Начать</button>
-        </div>
-      </details>
-      <details>
-        <summary>Расслабление мышц по очереди</summary>
-        <ol>
-          <li>Лягте на спину. Сожмите стопы на 5 секунд, потом отпустите на 10–15.</li>
-          <li>Так же двигайтесь вверх: голени, бёдра, живот, кисти, плечи.</li>
-          <li>В конце напрягите и расслабьте лицо: брови, челюсть, лоб.</li>
-          <li>Весь круг занимает 10–15 минут. Между группами мышц дышите ровно.</li>
-        </ol>
-      </details>
-      <details>
-        <summary>Слова на выбранную букву</summary>
-        <p>Это способ отвлечь голову от мыслей. Выберите нейтральное слово, например «звезда». На каждую букву придумывайте слова: на «з» это зима, забор, зонт. Представляйте каждое слово несколько секунд и переходите к следующему. Не связывайте слова в историю.</p>
-      </details>
-      <details>
-        <summary>Если лежите больше 20 минут</summary>
-        <ul>
-          <li>Не смотрите на часы и не заставляйте себя заснуть.</li>
-          <li>Встаньте, включите тусклый свет и займитесь чем-то тихим без экрана: книга, растяжка, тёплая вода.</li>
-          <li>Возвращайтесь в кровать, когда начнёт клонить в сон.</li>
-          <li>Кровать только для сна. Игры и телефон лёжа приучают мозг не спать там.</li>
-        </ul>
-      </details>
-      <details>
-        <summary>Выгрузить мысли на бумагу</summary>
-        <p>За час до отбоя на 5 минут запишите всё, что крутится в голове: дела на завтра, вопросы, тревоги. Когда это лежит на бумаге, голове проще отпустить.</p>
-      </details>
-      <details>
-        <summary>Когда нужен врач</summary>
-        <p>Если проблемы со сном держатся больше трёх недель или из-за них трудно учиться, стоит обратиться к врачу. Таблетки и добавки без назначения я не советую.</p>
-      </details>
-    </div>
-  </section>
-
   <details id="settings">
     <summary>Настройки режима</summary>
     <div class="form">
@@ -299,6 +329,7 @@ select { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid var
       <div class="field"><label for="f-sleep">Сколько спать, ч</label><input id="f-sleep" type="number" min="3" max="12" step="0.5"></div>
       <div class="field"><label for="f-prep">Впритык: за сколько минут до пары</label><input id="f-prep" type="number" min="0" max="240" step="5"></div>
       <div class="field"><label for="f-fall">Засыпаю за, мин</label><input id="f-fall" type="number" min="0" max="120" step="5"></div>
+      <div class="field wide"><label>Свой подъём по дням: за сколько минут до первой пары (пусто, если общее значение). Работает в режиме «Своё».</label><div class="daygrid" id="daygrid"></div></div>
       <label class="check"><input id="f-unsure" type="checkbox"><span>Не учитывать пары ОИЗ без дат. Их стоит уточнить у старосты.</span></label>
       <button class="reset" id="f-reset" type="button">Сбросить настройки</button>
     </div>
@@ -375,12 +406,13 @@ const fmtDay = d => d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numer
 const cyc = n => n === 1 ? 'цикл' : (n >= 2 && n <= 4 ? 'цикла' : 'циклов');
 const wdayName = d => d.toLocaleDateString('ru-RU', { weekday: 'long' });
 
-const DEF = { pal: 'indigo', theme: 'auto', prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00' };
+const DEF = { pal: 'indigo', theme: 'auto', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00' };
 let S = { ...DEF };
 let skipped = {};
 try { const j = JSON.parse(localStorage.getItem('rasp-settings')); if (j) S = { ...DEF, ...j }; } catch (e) {}
 try { skipped = JSON.parse(localStorage.getItem('rasp-skipped')) || {}; } catch (e) {}
-S.mode = S.mode === 'late' ? 'late' : 'early';
+S.mode = ['early', 'late', 'custom'].includes(S.mode) ? S.mode : 'early';
+if (!S.leadDay || typeof S.leadDay !== 'object') S.leadDay = {};
 if (S.prep === 90) S.prep = 60;
 if (S.wake === '09:00') S.wake = '10:00';
 delete S.sub;
@@ -396,9 +428,14 @@ function classes(d) {
 }
 // Подъём зависит от первой пары дня.
 // Впритык: за S.prep минут до пары. Пораньше: за 3 часа до пары, но между 9:00 и 10:00, и не позже чем за 1,5 часа до пары.
-function wakeFor(first, mode) {
+function leadFor(n) {
+  const v = S.leadDay && S.leadDay[n];
+  return (v !== undefined && v !== null && v !== '' && isFinite(v)) ? Number(v) : S.lead;
+}
+function wakeFor(first, mode, n) {
   const f = mins(first);
   if (mode === 'late') return f - S.prep;
+  if (mode === 'custom') return f - leadFor(n);
   return Math.min(Math.max(540, Math.min(600, f - 180)), f - 90);
 }
 function plan(d, mode) {
@@ -408,10 +445,15 @@ function plan(d, mode) {
   if (cs.length) {
     first = SLOTS[cs[0].s][0];
     last = SLOTS[cs[cs.length - 1].s][1];
-    wake = wakeFor(first, mode);
+    wake = wakeFor(first, mode, dow(d));
   }
   const bed = wake - S.sleep * 60 - S.fall;
   return { cs, first, last, wake, bed };
+}
+function keepFocus(fn) {
+  const a = document.activeElement, id = a && a.id;
+  fn();
+  if (id) { const e = document.getElementById(id); if (e) { e.focus(); } }
 }
 const at = (d, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, Math.round(m));
 
@@ -438,7 +480,7 @@ function renderHero() {
   if (now >= bedAt && now < wakeAt) note = 'Отбой был в ' + hm(p.bed) + '. Сейчас пора спать, подъём через ' + dur((wakeAt - now) / 6e4) + '.';
   else note = 'До отбоя ' + dur((bedAt - now) / 6e4) + '.';
   const why = p.cs.length
-    ? 'Первая пара ' + p.first + ', подъём ' + (S.mode === 'late' ? 'впритык, за ' + S.prep + ' мин до неё.' : 'пораньше, с запасом.')
+    ? 'Первая пара ' + p.first + ', подъём ' + (S.mode === 'late' ? 'впритык, за ' + S.prep + ' мин до неё.' : S.mode === 'custom' ? 'за ' + leadFor(dow(d)) + ' мин до неё.' : 'пораньше, с запасом.')
     : 'В этот день пар нет, подъём ' + hm(p.wake) + '.';
   $('hero').innerHTML =
     '<p class="hero-top">Ближайший подъём: ' + wdayName(d) + ', ' + d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '</p>' +
@@ -450,14 +492,20 @@ function renderHero() {
 const CYC = [[6, 'С запасом'], [5, 'Идеал'], [4, 'Минимум'], [3, 'Аварийный']];
 function renderVariants() {
   const { d, p } = ctx;
-  const earlyP = plan(d, 'early'), lateP = plan(d, 'late');
+  const earlyP = plan(d, 'early'), lateP = plan(d, 'late'), customP = plan(d, 'custom');
   let h = '<h2>Когда ложиться: варианты</h2>' +
     '<p class="hint">Время зависит от дня: считается от первой пары' + (p.cs.length ? ' (' + wdayName(d) + ', ' + p.first + ')' : ', в ' + wdayName(d) + ' пар нет') + '. Сон идёт циклами примерно по 90 минут, проснуться в конце цикла легче.</p>';
   h += '<div class="seg"><button class="btn" type="button" data-mode="early" aria-pressed="' + (S.mode === 'early') + '">Пораньше<small>подъём ' + hm(earlyP.wake) + '</small></button>' +
-       '<button class="btn" type="button" data-mode="late" aria-pressed="' + (S.mode === 'late') + '">Впритык<small>подъём ' + hm(lateP.wake) + (lateP.cs.length ? ', за ' + S.prep + ' мин до пары' : ', пар нет') + '</small></button></div>';
-  h += '<p class="note">Пораньше: примерно за 3 часа до пары, но между 9:00 и 10:00. Впритык: за ' + S.prep + ' мин до первой пары.</p>';
+       '<button class="btn" type="button" data-mode="late" aria-pressed="' + (S.mode === 'late') + '">Впритык<small>' + hm(lateP.wake) + (lateP.cs.length ? ', за ' + S.prep + ' мин' : ', пар нет') + '</small></button>' +
+       '<button class="btn" type="button" data-mode="custom" aria-pressed="' + (S.mode === 'custom') + '">Своё<small>' + hm(customP.wake) + (customP.cs.length ? ', за ' + leadFor(dow(d)) + ' мин' : ', пар нет') + '</small></button></div>';
+  h += '<p class="note">Пораньше: примерно за 3 часа до пары, но между 9:00 и 10:00. Впритык: за ' + S.prep + ' мин до первой пары. Своё: сколько минут до первой пары задаёте вы.</p>';
+  if (S.mode === 'custom') {
+    h += '<div class="mini"><span class="lbl">Вставать за</span><input id="lead-in" class="leadin" type="number" min="0" max="600" step="5" value="' + S.lead + '"><span class="lbl">мин до пары</span></div>' +
+      '<div class="mini">' + [30, 45, 60, 90, 120, 180].map(v => '<button class="btn" type="button" data-lead="' + v + '" aria-pressed="' + (S.lead === v) + '">' + v + '</button>').join('') + '</div>';
+    if (Object.keys(S.leadDay).some(k => S.leadDay[k] !== '' && S.leadDay[k] != null)) h += '<p class="note">Для некоторых дней недели заданы свои значения в настройках режима.</p>';
+  }
   const bn = ((p.bed % 1440) + 1440) % 1440;
-  if (S.mode === 'late' && bn >= 120 && bn <= 420) h += '<p class="note">Отбой в ' + hm(p.bed) + ' сдвигает весь режим на утро. Если так в несколько дней подряд, лучше вариант «Пораньше».</p>';
+  if (S.mode !== 'early' && bn >= 120 && bn <= 420) h += '<p class="note">Отбой в ' + hm(p.bed) + ' сдвигает весь режим на утро. Если так в несколько дней подряд, лучше вариант «Пораньше».</p>';
   h += '<div class="mini"><span class="lbl">Засыпаю за</span>' + [10, 15, 30, 45, 60].map(v => '<button class="btn" type="button" data-fall="' + v + '" aria-pressed="' + (S.fall === v) + '">' + v + '</button>').join('') + '<span class="lbl">мин</span></div>';
   h += '<div class="vars">';
   const known = CYC.some(c => c[0] * 1.5 === S.sleep);
@@ -473,6 +521,9 @@ function renderVariants() {
   h += '</div><p class="note">Нажмите на вариант, и он станет основным в плане и вверху страницы. Отбой учитывает, что вы засыпаете за ' + S.fall + ' мин.</p>';
   $('variants').innerHTML = h;
   $('variants').querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); render(); }));
+  $('variants').querySelectorAll('[data-lead]').forEach(b => b.addEventListener('click', () => { S.lead = Number(b.dataset.lead); save(); render(); }));
+  const li = $('lead-in');
+  if (li) li.addEventListener('input', ev => { if (ev.target.value === '') return; S.lead = Math.max(0, Math.min(600, Number(ev.target.value))); save(); keepFocus(render); });
   $('variants').querySelectorAll('[data-fall]').forEach(b => b.addEventListener('click', () => { S.fall = Number(b.dataset.fall); save(); fillForm(); render(); }));
   $('variants').querySelectorAll('[data-sleep]').forEach(b => b.addEventListener('click', () => { S.sleep = Number(b.dataset.sleep); save(); fillForm(); render(); }));
 }
@@ -582,7 +633,8 @@ function renderDay() {
     const meta = [e.r, e.p].filter(Boolean).join(' · ');
     let chips = '<span class="chip t">' + TYPE[e.t] + '</span>';
     if (e.unsure) chips += '<span class="chip warn">без дат, уточнить</span>';
-    return '<div class="subj">' + e.n + '</div>' + (meta ? '<div class="meta">' + meta + '</div>' : '') + '<div class="chips">' + chips + '</div>';
+    const joke = e.t === 'лек' ? '<div class="joke">Примечание: это пара игры в Клеш Рояль</div>' : '';
+    return '<div class="subj">' + e.n + '</div>' + (meta ? '<div class="meta">' + meta + '</div>' : '') + joke + '<div class="chips">' + chips + '</div>';
   };
   let prevEnd = null;
   groups.forEach(g => {
@@ -640,6 +692,17 @@ function fillForm() {
   $('f-unsure').checked = S.unsure;
 }
 function bind() {
+  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  $('daygrid').innerHTML = names.map((n, i) => '<label for="ld-' + (i + 1) + '">' + n + '<input id="ld-' + (i + 1) + '" type="number" min="0" max="600" step="5" placeholder="общее"></label>').join('');
+  names.forEach((n, i) => {
+    const el = $('ld-' + (i + 1));
+    const v = S.leadDay[i + 1];
+    el.value = (v === undefined || v === null || v === '') ? '' : v;
+    el.addEventListener('input', ev => {
+      if (ev.target.value === '') delete S.leadDay[i + 1]; else S.leadDay[i + 1] = Math.max(0, Math.min(600, Number(ev.target.value)));
+      save(); keepFocus(render);
+    });
+  });
   fillForm();
   const num = { sleep: 'f-sleep', prep: 'f-prep', fall: 'f-fall' };
   Object.keys(num).forEach(key => $(num[key]).addEventListener('input', ev => {
@@ -648,7 +711,7 @@ function bind() {
   }));
   $('f-wake').addEventListener('input', ev => { if (ev.target.value) { S.wake = ev.target.value; save(); render(); } });
   $('f-unsure').addEventListener('change', ev => { S.unsure = ev.target.checked; save(); render(); });
-  $('f-reset').addEventListener('click', () => { S = { ...DEF, pal: S.pal, theme: S.theme }; save(); fillForm(); render(); });
+  $('f-reset').addEventListener('click', () => { S = { ...DEF, leadDay: {}, pal: S.pal, theme: S.theme }; save(); fillForm(); names.forEach((n, i) => { $('ld-' + (i + 1)).value = ''; }); render(); });
 }
 
 // Дыхание 4-7-8
@@ -688,10 +751,20 @@ $('brbtn').addEventListener('click', () => {
 });
 $('d-breath').addEventListener('toggle', () => { if (!$('d-breath').open && br.on) brStop(false); });
 
+function showTab(t) {
+  $('tab-sleep').hidden = t !== 'sleep';
+  $('tab-sched').hidden = t !== 'sched';
+  $('mt-sleep').setAttribute('aria-pressed', String(t === 'sleep'));
+  $('mt-sched').setAttribute('aria-pressed', String(t === 'sched'));
+  if (t !== 'sleep' && br.on) brStop(false);
+  try { window.scrollTo(0, 0); } catch (e) {}
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 applyLook();
 renderLook();
 bind();
 render();
+showTab('sleep');
 setInterval(() => { if (document.activeElement && /^(INPUT|SELECT)$/.test(document.activeElement.tagName)) return; renderHero(); renderCues(); renderDay(); }, 60000);
 </script>
 
