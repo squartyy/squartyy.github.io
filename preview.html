@@ -1,0 +1,1574 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D1120">
+<meta name="application-name" content="Пары и сон">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Пары и сон">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Пары и сон</title>
+<script>try{var a=JSON.parse(localStorage.getItem("rasp-settings"))||{},r=document.documentElement;if(a.theme==="light"||a.theme==="dark")r.setAttribute("data-theme",a.theme);if(a.pal&&a.pal!=="indigo")r.setAttribute("data-palette",a.pal)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: вверху кнопка оформления, под ней две вкладки (Расписание, Сон). В «Сне» главная карточка с отбоем и подъёмом, ниже четыре раздела с иконками. */
+:root {
+  --bg: #EDF0F7;
+  --surface: #FFFFFF;
+  --ink: #141A2E;
+  --muted: #5A6479;
+  --line: #D8DDEA;
+  --night: #3445BF;
+  --night-soft: #E2E6FB;
+  --dawn: #B85F00;
+  --dawn-soft: #FFEACB;
+  --ok: #1B7F54;
+  --warn: #B3261E;
+  --on-night: #FFFFFF;
+  --f-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+  --f-body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1120; --surface: #161B2F; --ink: #E8EBF6; --muted: #98A1BA; --line: #2A3150;
+    --night: #94A2FF; --night-soft: #222A57; --dawn: #FFB454; --dawn-soft: #3A2A10;
+    --ok: #4CC38A; --warn: #FF8A80; --on-night: #0D1120; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1120; --surface: #161B2F; --ink: #E8EBF6; --muted: #98A1BA; --line: #2A3150;
+  --night: #94A2FF; --night-soft: #222A57; --dawn: #FFB454; --dawn-soft: #3A2A10;
+  --ok: #4CC38A; --warn: #FF8A80; --on-night: #0D1120; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-block: 18px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+.ic { width: 1.2em; height: 1.2em; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Шапка */
+.top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 46px; height: 46px; flex: none; }
+.logo svg, .inst-logo svg { width: 100%; height: 100%; display: block; }
+.eyebrow { margin: 0; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: -.01em; }
+.iconbtn { width: 42px; height: 42px; border-radius: 13px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; }
+.iconbtn .ic { width: 21px; height: 21px; }
+.iconbtn[aria-expanded="true"] { border-color: var(--night); color: var(--night); }
+.lookpop { position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; width: min(330px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg3 button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); font-size: 12px; }
+.seg3 button[aria-pressed="true"] { border-color: var(--night); color: var(--night); background: var(--night-soft); }
+.pals { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.sw { aspect-ratio: 1; width: 100%; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+
+/* Основные вкладки */
+.maintabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.maintabs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 8px; border-radius: 12px; border: 0; background: transparent; font-weight: 600; font-size: 15px; color: var(--muted); }
+.maintabs button[aria-pressed="true"] { background: var(--night); color: var(--on-night); }
+.tabpane { display: flex; flex-direction: column; gap: 16px; }
+
+/* Общие карточки */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.panel h2 .ic { color: var(--night); }
+.hint, .note { margin: 0; font-size: 13px; color: var(--muted); }
+.btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.btn.pri { background: var(--night); border-color: var(--night); color: var(--on-night); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.pri[aria-pressed="true"] { background: var(--night); color: var(--on-night); border-color: var(--night); }
+
+/* Расписание */
+.switch { display: flex; gap: 8px; }
+.switch button { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+.tab { min-width: 0; padding: 8px 0 7px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 1px; position: relative; }
+.tab .d { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tab .n { font-family: var(--f-mono); font-size: 15px; }
+.tab[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--on-night); }
+.tab[aria-pressed="true"] .d { color: inherit; opacity: .8; }
+.tab.today:not([aria-pressed="true"]) { border-color: var(--night); }
+.tab.today::after { content: ""; position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .7; }
+.tab.off:not([aria-pressed="true"]) { opacity: .55; }
+.day { display: flex; flex-direction: column; gap: 8px; }
+.day-head { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.day-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.day-head h2::first-letter { text-transform: uppercase; }
+.sumrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.pill .ic { width: 14px; height: 14px; }
+.pill.hl { color: var(--night); border-color: var(--night); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: grid; grid-template-columns: 54px 1fr; gap: 14px; }
+.card.now { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok); }
+.card.past { opacity: .5; }
+.card.dim { opacity: .55; border-style: dashed; }
+.time { font-family: var(--f-mono); font-size: 14px; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; padding-right: 12px; border-right: 1px solid var(--line); }
+.time span:nth-child(2) { color: var(--muted); }
+.flag { font-family: var(--f-body); font-size: 11.5px; color: var(--ok); margin-top: 4px; line-height: 1.2; }
+.body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.subj { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
+.tbadge { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; flex: none; margin-top: 1px; }
+.tbadge .ic { width: 14px; height: 14px; }
+.tbadge[data-t="лек"] { background: var(--night-soft); color: var(--night); }
+.tbadge[data-t="лаб"] { background: var(--dawn-soft); color: var(--dawn); }
+.tbadge[data-t="пр"] { background: color-mix(in srgb, var(--ok) 16%, var(--surface)); color: var(--ok); }
+.tbadge[data-t="кур"] { background: var(--bg); color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 13px; padding-left: 32px; }
+.meta span { display: inline-flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
+.meta .ic { width: 13px; height: 13px; }
+.joke { padding-left: 32px; font-size: 13px; font-style: italic; color: var(--dawn); display: flex; align-items: center; gap: 6px; }
+.joke .ic { width: 14px; height: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 32px; margin-top: 2px; }
+.chip { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.warn { border-color: var(--dawn); color: var(--dawn); }
+.subrow { display: flex; flex-direction: column; gap: 3px; }
+.subrow + .subrow { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
+.sublab { align-self: flex-start; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--night-soft); color: var(--night); font-weight: 600; margin-bottom: 2px; }
+.nopair { padding-left: 32px; color: var(--muted); font-size: 13px; }
+.gap { margin: 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 16px; padding: 18px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+.skipbtn { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; padding: 9px 13px; border-radius: 12px; border: 1px solid var(--line); background: transparent; font-size: 13.5px; }
+
+/* Сон: главная карточка */
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.hero-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.hero-head .ic { color: var(--night); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.half { min-width: 0; border-radius: 14px; padding: 12px 14px; }
+.half.bed { background: var(--night-soft); }
+.half.wake { background: var(--dawn-soft); }
+.half .lab { display: flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.half.bed .lab { color: var(--night); }
+.half.wake .lab { color: var(--dawn); }
+.half .big { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 9.5vw, 40px); line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.half.bed .big { color: var(--night); }
+.half.wake .big { color: var(--dawn); }
+.half .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
+.hero-note { margin: 0; font-size: 14px; }
+.nightbox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.nightbtn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: left; font-weight: 500; }
+.nightbtn > span:first-of-type { flex: 1; }
+.nightbtn .ic { color: var(--night); }
+.tog { width: 38px; height: 22px; border-radius: 999px; background: var(--line); position: relative; flex: none; transition: background .15s; }
+.tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); transition: transform .15s; }
+.nightbtn[aria-pressed="true"] { border-color: var(--night); }
+.nightbtn[aria-pressed="true"] .tog { background: var(--night); }
+.nightbtn[aria-pressed="true"] .tog::after { transform: translateX(16px); background: var(--on-night); }
+.night-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.night-row input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.verdict { border-radius: 12px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.verdict b { font-size: 15px; }
+.verdict.good { background: var(--night-soft); }
+.verdict.mid { background: var(--dawn-soft); }
+.verdict.bad { background: var(--dawn-soft); border: 1px solid var(--warn); }
+.verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+
+/* Сон: разделы */
+.subnav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.subnav button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; color: var(--muted); min-width: 0; }
+.subnav .ic { width: 20px; height: 20px; }
+.subnav button[aria-pressed="true"] { background: var(--night-soft); border-color: var(--night); color: var(--night); font-weight: 600; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.seg .btn { text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.seg .btn small { font-size: 11.5px; opacity: .8; line-height: 1.25; }
+.mini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
+.mini .lbl { color: var(--muted); }
+.mini .btn { padding: 5px 10px; font-size: 13px; font-family: var(--f-mono); }
+.leadin { width: 84px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.vars { display: flex; flex-direction: column; gap: 8px; }
+.var { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); width: 100%; }
+.var[aria-pressed="true"] { border-color: var(--night); background: var(--night-soft); }
+.var .vt { font-weight: 600; }
+.var .vs { font-size: 12.5px; color: var(--muted); }
+.var .vb { font-family: var(--f-display); font-weight: 700; font-size: 22px; color: var(--night); font-variant-numeric: tabular-nums; }
+.var.weak .vb { color: var(--dawn); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { padding-left: 12px; }
+th:last-child, td:last-child { padding-right: 12px; }
+th { font-size: 12px; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+tr.cur td:first-child { color: var(--night); font-weight: 600; }
+.cues { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cue { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--bg); display: flex; flex-direction: column; gap: 3px; }
+.cue .k { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.cue .k .ic { color: var(--night); margin-top: 1px; }
+.cue .v { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.tech { display: flex; flex-direction: column; gap: 8px; }
+.tech details { padding: 10px 12px; background: var(--bg); border-radius: 12px; }
+.tech summary { font-weight: 600; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.tech summary .ic { color: var(--night); }
+.tech ol, .tech ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.tech p { margin: 8px 0 0; font-size: 14px; }
+.brwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0 4px; }
+.brc { width: 150px; height: 150px; border-radius: 50%; background: var(--night-soft); border: 2px solid var(--night); display: flex; flex-direction: column; align-items: center; justify-content: center; transform: scale(.55); transition-property: transform; transition-timing-function: ease-in-out; }
+.brc .ph { font-size: 14px; color: var(--night); }
+.brc .sec { font-family: var(--f-display); font-weight: 700; font-size: 34px; color: var(--night); font-variant-numeric: tabular-nums; }
+.brsub { font-size: 13px; color: var(--muted); min-height: 1.4em; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .brc, .tog, .tog::after { transition-duration: 0s !important; } }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+.field label { font-size: 13px; color: var(--muted); }
+.field input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); width: 100%; min-width: 0; font-family: var(--f-mono); }
+.daygrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.daygrid label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.daygrid input { width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-family: var(--f-mono); }
+.check { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; }
+.reset { grid-column: 1 / -1; justify-self: start; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; }
+.subsel { display: flex; align-items: center; gap: 8px; }
+.sublbl { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); margin-right: auto; }
+.subsel button { min-width: 64px; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.subsel button[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--on-night); }
+.install { display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: start; }
+.inst-logo { width: 84px; height: 84px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.2)); }
+footer { font-size: 12.5px; color: var(--muted); }
+.sign { margin: 14px 0 0; font-family: var(--f-display); font-weight: 500; font-size: 13px; color: var(--ink); text-align: center; }
+@media (max-width: 380px) { .pair, .form, .cues { grid-template-columns: 1fr; } .seg { grid-template-columns: 1fr; } }
+
+/* Палитры: светлая версия на :root, тёмная в двух блоках (по системе и по выбору) */
+:root[data-palette="ocean"] { --bg: #E8F3F5; --surface: #FFFFFF; --ink: #0F2A33; --muted: #4F6A73; --line: #CFE0E4; --night: #0B6E80; --night-soft: #D4EDF1; --dawn: #C2410C; --dawn-soft: #FFE6D9; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="ocean"] { --bg: #0A1A1F; --surface: #112A31; --ink: #E3F2F5; --muted: #8FB0B8; --line: #1F4048; --night: #5CD0E6; --night-soft: #14424D; --dawn: #FF9E6B; --dawn-soft: #3F2316; --on-night: #06242B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="ocean"] { --bg: #0A1A1F; --surface: #112A31; --ink: #E3F2F5; --muted: #8FB0B8; --line: #1F4048; --night: #5CD0E6; --night-soft: #14424D; --dawn: #FF9E6B; --dawn-soft: #3F2316; --on-night: #06242B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="forest"] { --bg: #ECF2EA; --surface: #FFFFFF; --ink: #16251A; --muted: #566A5A; --line: #D3DFD0; --night: #2F6B3F; --night-soft: #DCEBDD; --dawn: #A8590A; --dawn-soft: #FBE9CF; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="forest"] { --bg: #0E1710; --surface: #16231A; --ink: #E4F0E6; --muted: #93AB98; --line: #27402D; --night: #8FD19E; --night-soft: #1E3B25; --dawn: #F2B04D; --dawn-soft: #3A2B10; --on-night: #0C2012; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="forest"] { --bg: #0E1710; --surface: #16231A; --ink: #E4F0E6; --muted: #93AB98; --line: #27402D; --night: #8FD19E; --night-soft: #1E3B25; --dawn: #F2B04D; --dawn-soft: #3A2B10; --on-night: #0C2012; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="rose"] { --bg: #F8ECF1; --surface: #FFFFFF; --ink: #2A1520; --muted: #75525F; --line: #EBD3DC; --night: #A8286B; --night-soft: #F7DCEA; --dawn: #B4530F; --dawn-soft: #FFE8D2; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="rose"] { --bg: #1A0D14; --surface: #2A1620; --ink: #F6E6EE; --muted: #BE9AAB; --line: #4A2838; --night: #FF8DC0; --night-soft: #4B1F36; --dawn: #FFB067; --dawn-soft: #432A12; --on-night: #2B0C1B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="rose"] { --bg: #1A0D14; --surface: #2A1620; --ink: #F6E6EE; --muted: #BE9AAB; --line: #4A2838; --night: #FF8DC0; --night-soft: #4B1F36; --dawn: #FFB067; --dawn-soft: #432A12; --on-night: #2B0C1B; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="graphite"] { --bg: #EFEFF0; --surface: #FFFFFF; --ink: #1B1C1F; --muted: #66686E; --line: #DADBDE; --night: #2E3138; --night-soft: #E3E4E8; --dawn: #8A6A00; --dawn-soft: #F6EDCB; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="graphite"] { --bg: #0F1011; --surface: #1A1B1E; --ink: #ECEDEF; --muted: #9A9CA3; --line: #303236; --night: #D2D5DD; --night-soft: #2A2C32; --dawn: #E6C463; --dawn-soft: #3A3216; --on-night: #15161A; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="violet"] { --bg: #F2EEF7; --surface: #FFFFFF; --ink: #1B1226; --muted: #60536E; --line: #DBD2E4; --night: #5D259D; --night-soft: #EADBFA; --dawn: #966708; --dawn-soft: #FFEECC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="violet"] { --bg: #110C18; --surface: #1D1526; --ink: #EDE8F3; --muted: #A79BB5; --line: #372A46; --night: #B97EFC; --night-soft: #311C4A; --dawn: #FFC95C; --dawn-soft: #413110; --on-night: #190D26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="violet"] { --bg: #110C18; --surface: #1D1526; --ink: #EDE8F3; --muted: #A79BB5; --line: #372A46; --night: #B97EFC; --night-soft: #311C4A; --dawn: #FFC95C; --dawn-soft: #413110; --on-night: #190D26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="teal"] { --bg: #EEF7F6; --surface: #FFFFFF; --ink: #122624; --muted: #536E6C; --line: #D2E4E2; --night: #1D7C72; --night-soft: #DBFAF7; --dawn: #962408; --dawn-soft: #FFD6CC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="teal"] { --bg: #0C1817; --surface: #152624; --ink: #E8F3F1; --muted: #9BB5B3; --line: #2A4643; --night: #7EFCEF; --night-soft: #1C4A45; --dawn: #FF7C5C; --dawn-soft: #411A10; --on-night: #0D2624; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="teal"] { --bg: #0C1817; --surface: #152624; --ink: #E8F3F1; --muted: #9BB5B3; --line: #2A4643; --night: #7EFCEF; --night-soft: #1C4A45; --dawn: #FF7C5C; --dawn-soft: #411A10; --on-night: #0D2624; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="crimson"] { --bg: #F7EEEF; --surface: #FFFFFF; --ink: #261216; --muted: #6E5358; --line: #E4D2D5; --night: #9D2539; --night-soft: #FADBE0; --dawn: #966208; --dawn-soft: #FFECCC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="crimson"] { --bg: #180C0E; --surface: #261517; --ink: #F3E8EA; --muted: #B59BA0; --line: #462A2F; --night: #FC7E93; --night-soft: #4A1C24; --dawn: #FFC35C; --dawn-soft: #412F10; --on-night: #260D11; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="crimson"] { --bg: #180C0E; --surface: #261517; --ink: #F3E8EA; --muted: #B59BA0; --line: #462A2F; --night: #FC7E93; --night-soft: #4A1C24; --dawn: #FFC35C; --dawn-soft: #412F10; --on-night: #260D11; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="amber"] { --bg: #F7F3EE; --surface: #FFFFFF; --ink: #261E12; --muted: #6E6453; --line: #E4DDD2; --night: #9D6D25; --night-soft: #FAEEDB; --dawn: #960D08; --dawn-soft: #FFCECC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="amber"] { --bg: #18130C; --surface: #261F15; --ink: #F3EEE8; --muted: #B5AB9B; --line: #463B2A; --night: #FCC97E; --night-soft: #4A381C; --dawn: #FF615C; --dawn-soft: #411210; --on-night: #261C0D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="amber"] { --bg: #18130C; --surface: #261F15; --ink: #F3EEE8; --muted: #B5AB9B; --line: #463B2A; --night: #FCC97E; --night-soft: #4A381C; --dawn: #FF615C; --dawn-soft: #411210; --on-night: #261C0D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="olive"] { --bg: #F3F7EE; --surface: #FFFFFF; --ink: #1F2612; --muted: #656E53; --line: #DEE4D2; --night: #597C1D; --night-soft: #EFFADB; --dawn: #963C08; --dawn-soft: #FFDFCC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="olive"] { --bg: #14180C; --surface: #202615; --ink: #EFF3E8; --muted: #ACB59B; --line: #3C462A; --night: #CDFC7E; --night-soft: #394A1C; --dawn: #FF985C; --dawn-soft: #412210; --on-night: #1D260D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="olive"] { --bg: #14180C; --surface: #202615; --ink: #EFF3E8; --muted: #ACB59B; --line: #3C462A; --night: #CDFC7E; --night-soft: #394A1C; --dawn: #FF985C; --dawn-soft: #412210; --on-night: #1D260D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="coffee"] { --bg: #F7F1EE; --surface: #FFFFFF; --ink: #261A12; --muted: #6E5E53; --line: #E4DAD2; --night: #9D5525; --night-soft: #FAE8DB; --dawn: #085B96; --dawn-soft: #CCEAFF; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="coffee"] { --bg: #18110C; --surface: #261C15; --ink: #F3ECE8; --muted: #B5A69B; --line: #46352A; --night: #FCB07E; --night-soft: #4A2E1C; --dawn: #5CBBFF; --dawn-soft: #102D41; --on-night: #26170D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="coffee"] { --bg: #18110C; --surface: #261C15; --ink: #F3ECE8; --muted: #B5A69B; --line: #46352A; --night: #FCB07E; --night-soft: #4A2E1C; --dawn: #5CBBFF; --dawn-soft: #102D41; --on-night: #26170D; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+:root[data-palette="sky"] { --bg: #EEF3F7; --surface: #FFFFFF; --ink: #121D26; --muted: #53626E; --line: #D2DCE4; --night: #25659D; --night-soft: #DBECFA; --dawn: #964F08; --dawn-soft: #FFE6CC; --on-night: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-palette="sky"] { --bg: #0C1218; --surface: #151E26; --ink: #E8EEF3; --muted: #9BA9B5; --line: #2A3946; --night: #7EC1FC; --night-soft: #1C354A; --dawn: #FFAD5C; --dawn-soft: #412910; --on-night: #0D1A26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; } }
+:root[data-theme="dark"][data-palette="sky"] { --bg: #0C1218; --surface: #151E26; --ink: #E8EEF3; --muted: #9BA9B5; --line: #2A3946; --night: #7EC1FC; --night-soft: #1C354A; --dawn: #FFAD5C; --dawn-soft: #412910; --on-night: #0D1A26; --ok: #4CC38A; --warn: #FF8A80; color-scheme: dark; }
+.hbtns{display:flex;gap:8px;align-items:center}
+.langsel{height:42px;border-radius:13px;border:1px solid var(--line);background:var(--surface);padding:0 8px;font-weight:600}
+#dict{width:min(520px,calc(100% - 24px));max-height:80vh;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);padding:16px}
+#dict::backdrop{background:rgba(0,0,0,.5)}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.dh h2{margin:0;font-size:17px}
+#dq{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.de{padding:10px 0;border-top:1px solid var(--line)}.de:first-child{border-top:0}.de b{display:block;color:var(--night)}
+#setdlg{width:min(560px,calc(100% - 24px));max-height:86vh;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);padding:16px}#setdlg::backdrop{background:rgba(0,0,0,.5)}#setdlg[open]{animation:pop .22s ease-out}#setdlg .panel{border:0;padding:0}.subnav{grid-template-columns:repeat(3,1fr)!important}
+
+/* v17 refinement: richer sleep dashboard, clear hierarchy, smoother transitions */
+.look-title{margin:0 0 -7px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pals .sw{min-width:28px;transition:transform .18s ease,box-shadow .18s ease}.pals .sw:active{transform:scale(.92)}
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:20px;gap:16px;background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 94%,var(--night) 6%),var(--surface));box-shadow:0 12px 34px color-mix(in srgb,var(--night) 10%,transparent)}
+.hero:before{content:"";position:absolute;pointer-events:none;width:190px;height:190px;right:-90px;top:-105px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--night) 23%,transparent),transparent 70%)}
+.hero-head{position:relative;font-weight:600;letter-spacing:.01em}
+.pair{position:relative;gap:12px}
+.half{border-radius:19px;padding:16px 15px;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 25%,transparent)}
+.half.bed{background:linear-gradient(145deg,var(--night-soft),color-mix(in srgb,var(--night-soft) 74%,var(--night) 26%))}
+.half.wake{background:linear-gradient(145deg,var(--dawn-soft),color-mix(in srgb,var(--dawn-soft) 78%,var(--dawn) 22%))}
+.half .lab{font-size:11px;letter-spacing:.1em}
+.half .big{font-family:var(--f-mono);font-size:clamp(27px,7vw,36px);line-height:1.1;letter-spacing:-.06em;font-weight:700}
+.half .sub{font-size:12px;opacity:.82}
+.hero-note{position:relative;margin:0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--bg) 78%,var(--surface));font-size:13px;line-height:1.55;color:var(--muted)}
+.subnav{gap:7px;padding:5px;border-radius:17px;background:color-mix(in srgb,var(--surface) 85%,var(--bg));border:1px solid var(--line)}
+.subnav button{min-height:60px;border-radius:12px;gap:5px;font-size:12px;transition:background .2s ease,color .2s ease,transform .2s ease}
+.subnav button[aria-pressed="true"]{box-shadow:0 4px 12px color-mix(in srgb,var(--night) 18%,transparent)}
+#sp-var,#sp-week,#sp-tips,#sp-dict{border-radius:22px;padding:19px;box-shadow:0 8px 26px color-mix(in srgb,var(--ink) 5%,transparent);gap:16px}
+#sp-var h2,#sp-week h2,#sp-tips h2{font-size:17px;letter-spacing:-.02em}
+#sp-var .field,#sp-var .form .field{gap:8px}
+#sp-var input[type="time"],#sp-var input[type="number"],#sp-var select{min-height:48px;border-radius:13px;padding:10px 12px;border:1px solid var(--line);background:var(--bg);transition:border-color .18s ease,box-shadow .18s ease}
+#sp-var input:focus,#sp-var select:focus{border-color:var(--night);box-shadow:0 0 0 3px color-mix(in srgb,var(--night) 14%,transparent);outline:none}
+#sp-var .btn,#sp-var button.btn{min-height:43px;border-radius:12px;font-weight:600;transition:transform .16s ease,filter .16s ease}
+#sp-var .btn:active,#sp-var button:active{transform:scale(.98)}
+.var{border-radius:15px;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.var[aria-pressed="true"],.var.selected{box-shadow:0 5px 18px color-mix(in srgb,var(--night) 12%,transparent)}
+.tablewrap{border-radius:14px;overflow:auto}
+#plan{border-collapse:separate;border-spacing:0;min-width:100%}#plan th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}#plan td,#plan th{padding:11px 9px;border-bottom:1px solid var(--line)}
+.tech details{border:1px solid var(--line);border-radius:14px;padding:13px;background:color-mix(in srgb,var(--surface) 88%,var(--bg));}
+.tech summary{font-weight:600;gap:9px}
+.brc{box-shadow:0 0 0 9px color-mix(in srgb,var(--night) 7%,transparent),0 10px 30px color-mix(in srgb,var(--night) 15%,transparent)}
+.leave-badge{display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px;margin-top:8px;padding:7px 9px;border-radius:11px;background:var(--night-soft);color:var(--night);font-size:11px;line-height:1.25;max-width:100%}
+.leave-badge b{font-family:var(--f-mono);font-size:17px;letter-spacing:-.04em}
+.leave-badge small{flex-basis:100%;font-size:10px;color:var(--muted)}
+.card .time{min-width:94px;max-width:118px}
+.tabpane.swipe-track{transition:transform .28s cubic-bezier(.2,.75,.25,1),opacity .28s ease}
+.tabpane.swipe-drag{transition:none!important}
+.tabpane.swipe-exit{transition:transform .23s cubic-bezier(.2,.75,.25,1),opacity .23s ease;transform:translate3d(var(--swipe-exit-x,0),0,0) scale(.995);opacity:.82}
+@media(max-width:380px){.hero{padding:15px}.half{padding:13px 10px;min-height:118px}.half .big{font-size:27px}.leave-badge{padding:6px;font-size:10px}.leave-badge b{font-size:15px}.card .time{min-width:82px;max-width:94px}}
+@media(prefers-reduced-motion:reduce){.hero,.subnav button,.var,.pals .sw{transition:none!important;animation:none!important}}
+
+
+/* v18: redesigned sleep dashboard + repair schedule card geometry */
+.sleep-art{position:relative;isolation:isolate;min-height:178px;margin:-20px -20px 0;padding:22px 18px 10px;overflow:hidden;border-radius:23px 23px 0 0;background:radial-gradient(ellipse at 78% 48%,color-mix(in srgb,var(--night) 22%,transparent),transparent 55%),linear-gradient(135deg,#10162e 0%,#1b2044 52%,#2a2445 100%);color:#f4f3ff;display:flex;align-items:center;justify-content:space-between;gap:0}
+.sleep-art:after{content:"";position:absolute;inset:auto 0 0;height:38px;background:linear-gradient(transparent,rgba(10,13,28,.32));z-index:-1}
+.sleep-art-copy{position:relative;z-index:2;max-width:58%}.sleep-kicker{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.14em;font-weight:700;color:#b8baff}.sleep-kicker .ic{width:14px;height:14px}.sleep-art-title{font-family:var(--f-display);font-size:clamp(21px,6vw,29px);line-height:1.2;letter-spacing:-.055em;margin-top:14px}.sleep-art-date{font-size:12px;color:#c0c5e7;margin-top:10px}.sleep-illustration{width:48%;max-width:210px;min-width:135px;margin-right:-12px;filter:drop-shadow(0 8px 24px rgba(116,121,255,.16));animation:moonFloat 6s ease-in-out infinite alternate}
+@keyframes moonFloat{from{transform:translateY(2px)}to{transform:translateY(-5px)}}
+.sleep-plan-label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-weight:600}.sleep-plan-label>span:first-child{display:flex;align-items:center;gap:7px}.sleep-plan-label .ic{color:var(--night)}.sleep-live-dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 13%,transparent)}
+.sleep-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sleep-time{min-width:0;border:1px solid var(--line);border-radius:17px;padding:14px 13px;display:flex;flex-direction:column;gap:7px;background:color-mix(in srgb,var(--surface) 84%,var(--bg))}.sleep-time-bed{background:linear-gradient(145deg,color-mix(in srgb,var(--night-soft) 75%,var(--surface)),var(--surface))}.sleep-time-wake{background:linear-gradient(145deg,color-mix(in srgb,var(--dawn-soft) 70%,var(--surface)),var(--surface))}.sleep-time-label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}.sleep-time-label .ic{width:15px;height:15px;color:var(--night)}.sleep-time-wake .sleep-time-label .ic{color:var(--dawn)}.sleep-time strong{font-family:var(--f-mono);font-size:clamp(25px,7vw,34px);line-height:1.1;letter-spacing:-.06em;font-weight:700}.sleep-time-bed strong{color:var(--night)}.sleep-time-wake strong{color:var(--dawn)}.sleep-time>span{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.sleep-duration{padding:13px 14px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}.sleep-duration-top,.sleep-duration-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}.sleep-duration-top{font-size:12px;color:var(--muted)}.sleep-duration-top span{display:flex;align-items:center;gap:6px}.sleep-duration-top .ic{width:15px;height:15px;color:var(--night)}.sleep-duration-top b{font-family:var(--f-mono);font-size:15px;color:var(--ink)}.sleep-track{height:7px;margin:11px 0 8px;background:var(--bg);border-radius:99px;overflow:hidden}.sleep-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--night),color-mix(in srgb,var(--night) 45%,#c8b7ff));box-shadow:0 0 14px color-mix(in srgb,var(--night) 25%,transparent);transition:width .35s ease}.sleep-duration-bottom{font-size:10px;color:var(--muted)}
+.card{grid-template-columns:68px minmax(0,1fr);align-items:start}.card .time{min-width:0;max-width:none;width:auto;padding-right:9px;overflow-wrap:normal}.leave-badge{display:flex;align-items:center;flex-wrap:wrap;gap:3px 7px;margin:0 0 9px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--night) 20%,transparent);border-radius:11px;background:color-mix(in srgb,var(--night-soft) 78%,var(--surface));color:var(--night);font-size:11px;line-height:1.3;width:fit-content;max-width:100%}.leave-badge b{font-family:var(--f-mono);font-size:16px}.leave-badge small{font-size:10px;color:var(--muted);flex-basis:100%}.card .body{overflow:hidden;min-width:0}
+.tabpane{min-width:0}.tabpane.gesture-moving{will-change:transform,opacity}.tabpane{transition:opacity .18s ease}.maintabs button{transition:background .2s ease,color .2s ease,transform .2s ease}.maintabs button:active{transform:scale(.98)}
+@media(max-width:380px){.sleep-art{min-height:158px;padding:18px 14px 8px;margin:-15px -15px 0}.sleep-art-title{font-size:21px}.sleep-illustration{min-width:118px;margin-right:-14px}.sleep-time{padding:12px 10px}.sleep-time strong{font-size:25px}.card{grid-template-columns:60px minmax(0,1fr);gap:10px;padding:11px}.leave-badge{font-size:10px;padding:6px 8px}}
+@media(prefers-reduced-motion:reduce){.sleep-illustration{animation:none}.sleep-track span{transition:none}}
+
+/* v20: compact sleep variants, dedicated calculator tab, robust commute building parsing */
+#tab-sleep, #tab-sleep * { font-family: var(--f-body) !important; }
+#tab-sleep .sleep-time strong, #tab-sleep .sleep-duration-top b, #tab-sleep .var .vb { font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
+#tab-sleep .hero { padding: 14px; gap: 10px; border-radius: 19px; }
+#tab-sleep .sleep-art { min-height: 126px; margin: -14px -14px 0; padding: 13px 13px 5px; border-radius: 19px 19px 0 0; }
+#tab-sleep .sleep-art-title { font-size: 21px; line-height: 1.12; margin-top: 7px; letter-spacing: -.025em; }
+#tab-sleep .sleep-kicker { font-size: 9px; letter-spacing: .09em; }
+#tab-sleep .sleep-art-date { font-size: 11px; margin-top: 6px; }
+#tab-sleep .sleep-illustration { width: 42%; min-width: 108px; max-width: 160px; margin-right: -9px; }
+#tab-sleep .sleep-plan-label { font-size: 11px; }
+#tab-sleep .sleep-time-grid { gap: 8px; }
+#tab-sleep .sleep-time { padding: 10px; border-radius: 13px; gap: 4px; }
+#tab-sleep .sleep-time-label { font-size: 10px; letter-spacing: .025em; }
+#tab-sleep .sleep-time strong { font-size: clamp(23px, 6vw, 29px); }
+#tab-sleep .sleep-time>span { font-size: 10px; }
+#tab-sleep .sleep-duration { padding: 10px 11px; border-radius: 13px; }
+#tab-sleep .sleep-track { margin: 7px 0 6px; height: 5px; }
+#tab-sleep .sleep-duration-bottom { font-size: 9px; }
+#tab-sleep .hero-note { padding: 9px 10px; font-size: 11px; line-height: 1.4; }
+#tab-sleep .subnav { padding: 4px; gap: 5px; border-radius: 14px; }
+#tab-sleep .subnav button { min-height: 45px; gap: 3px; font-size: 11px; }
+#tab-sleep #sp-var, #tab-sleep #sp-week, #tab-sleep #sp-tips { padding: 14px; border-radius: 17px; gap: 11px; }
+#tab-sleep #sp-var h2, #tab-sleep #sp-week h2, #tab-sleep #sp-tips h2 { font-size: 15px; }
+#tab-sleep #sp-var .btn, #tab-sleep #sp-var button.btn { min-height: 38px; }
+.leave-badge { margin: 0 0 8px; padding: 6px 9px; font-size: 11px; }
+.leave-badge b { font-family: var(--f-body) !important; font-size: 15px; font-weight: 800; }
+@media(max-width:380px){#tab-sleep .sleep-art{min-height:112px;padding:11px 10px 4px;margin:-14px -14px 0}#tab-sleep .sleep-art-title{font-size:19px}#tab-sleep .sleep-illustration{min-width:98px;width:40%}#tab-sleep .sleep-time{padding:9px 8px}#tab-sleep .sleep-time strong{font-size:23px}}
+</style>
+<style>html{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--night) 45%,transparent)}70%,100%{box-shadow:0 0 0 10px transparent}}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.tabpane:not([hidden]),.panel:not([hidden]){animation:rise .32s ease-out both}
+.day.anim>*{animation:rise .38s ease-out both}
+.day.anim>*:nth-child(2){animation-delay:0.05s}.day.anim>*:nth-child(3){animation-delay:0.10s}.day.anim>*:nth-child(4){animation-delay:0.15s}.day.anim>*:nth-child(5){animation-delay:0.20s}.day.anim>*:nth-child(6){animation-delay:0.25s}.day.anim>*:nth-child(7){animation-delay:0.30s}.day.anim>*:nth-child(8){animation-delay:0.35s}
+.day.anim>.card.now{animation:rise .38s ease-out both,pulse 2.6s ease-out infinite}
+.logo{animation:drift 6s ease-in-out infinite}
+.logo .tw{transform-box:fill-box;transform-origin:center;animation:twinkle 3.2s ease-in-out infinite}
+#dict[open]{animation:pop .22s ease-out}#dict[open]::backdrop{animation:fade .22s}
+button{transition:transform .12s,background-color .2s,border-color .2s,color .2s}button:active{transform:scale(.96)}
+.langbox{display:flex;align-items:center;gap:6px;height:42px;padding:0 6px 0 10px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}
+.langbox .langsel{border:0;background:transparent;height:100%;padding:0 4px}
+.dh h2{display:flex;align-items:center;gap:8px}.dh .ic{color:var(--night)}.dsr{position:absolute;margin:12px 0 0 12px;color:var(--muted)}#dq{padding-left:36px}
+.field label{display:flex;align-items:center;gap:6px}.field label .ic{color:var(--night)}
+.vt .ic,.switch .ic,.de .ic{margin-right:6px;vertical-align:-3px;color:var(--night)}.plan th .ic,th .ic{margin-right:4px;vertical-align:-3px}
+.seg .btn>.ic{color:var(--night);margin-bottom:2px}.gap .ic{margin-right:4px;vertical-align:-3px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+html{background:var(--bg)}
+:root{--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.4,.64,1);--lg1:#3445BF;--lg2:#16205A}
+body{padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes sheet{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+@keyframes spIn{from{opacity:0;transform:scale(.7) rotate(-6deg)}to{opacity:1;transform:none}}
+@keyframes sweep{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+.tabpane:not([hidden]),.panel:not([hidden]){animation:rise .3s var(--ease) both}
+.day.anim>*{animation:rise .34s var(--ease) both}.day.anim>*:nth-child(2){animation-delay:0.035s}.day.anim>*:nth-child(3){animation-delay:0.070s}.day.anim>*:nth-child(4){animation-delay:0.105s}.day.anim>*:nth-child(5){animation-delay:0.140s}.day.anim>*:nth-child(6){animation-delay:0.175s}.day.anim>*:nth-child(7){animation-delay:0.210s}.day.anim>*:nth-child(8){animation-delay:0.245s}
+.day.anim>.card.now{animation:rise .34s var(--ease) both,pulse 2.8s ease-out .6s infinite}
+#dict[open],#setdlg[open]{animation:pop .28s var(--spring)}
+.lookpop:not([hidden]){animation:pop .24s var(--ease);transform-origin:top right}
+button{transition:transform .18s var(--ease),background-color .22s ease,border-color .22s ease,color .22s ease,box-shadow .22s ease}
+button:active{transform:scale(.965)}
+body,.panel,.card,.maintabs,.iconbtn,.lookpop{transition:background-color .35s ease,border-color .35s ease,color .35s ease}
+.langbtn{width:auto;padding:0 11px;gap:6px;display:flex;align-items:center;font-weight:600;font-size:13px}
+#langpop{width:210px;padding:6px;gap:2px}
+.langopt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;border:0;background:transparent;text-align:left;width:100%}
+.langopt b{font-family:var(--f-mono);font-size:12px;width:30px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--bg)}
+.langopt[aria-pressed="true"]{background:var(--night-soft);color:var(--night)}.langopt .ic:last-child{margin-left:auto}
+#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;color:#fff;background:radial-gradient(120% 90% at 50% 22%,var(--lg1),var(--lg2));padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity .45s var(--ease),transform .45s var(--ease),visibility 0s .45s}
+#splash.out{opacity:0;transform:scale(1.04);visibility:hidden;pointer-events:none}
+.sp-c{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.sp-logo{width:112px;height:112px;border-radius:30px;box-shadow:0 0 0 1px rgba(255,255,255,.2),0 24px 60px rgba(0,0,0,.35);animation:spIn .7s var(--spring) both,drift 5s ease-in-out .7s infinite}
+.sp-logo svg,.ib-logo svg{width:100%;height:100%;display:block}
+.sp-logo .tw{transform-box:fill-box;transform-origin:center;animation:twinkle 3.2s ease-in-out infinite}
+.sp-name{font-family:var(--f-display);font-weight:700;font-size:26px;margin-top:6px;animation:rise .6s var(--ease) .15s both}
+.sp-sub{font-size:14px;opacity:.78;animation:rise .6s var(--ease) .25s both}
+.sp-bar{width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.2);overflow:hidden;margin-top:12px;animation:rise .6s var(--ease) .35s both}
+.sp-bar span{display:block;height:100%;width:40%;border-radius:3px;background:#FFC261;animation:sweep 1.1s ease-in-out infinite}
+#splash>i{position:absolute;width:4px;height:4px;border-radius:50%;background:#FFC261;animation:twinkle 2.6s ease-in-out infinite}
+#splash>i:nth-child(1){top:16%;left:18%}#splash>i:nth-child(2){top:24%;right:14%;animation-delay:.5s}#splash>i:nth-child(3){top:62%;left:10%;animation-delay:1s}
+#splash>i:nth-child(4){bottom:18%;right:20%;animation-delay:1.4s}#splash>i:nth-child(5){top:40%;right:8%;animation-delay:.8s}#splash>i:nth-child(6){bottom:28%;left:26%;animation-delay:1.8s}
+.install-bar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:50;max-width:536px;margin:0 auto;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;padding:14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.28);animation:sheet .45s var(--spring) both}
+.ib-logo{width:44px;height:44px;grid-row:span 2}.ib-t{font-weight:600}.ib-sub{font-size:13px;color:var(--muted)}
+.ib-act{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+@media (max-width:420px){.eyebrow{font-size:9.5px;letter-spacing:.03em}.iconbtn{width:38px;height:38px}.langbtn{width:auto;height:38px}.hbtns{gap:5px}.logo{width:38px;height:38px}h1{font-size:17px}.brand{gap:8px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Smooth section-swipe feedback: animate only transform/opacity for mobile GPUs. */
+.tabpane.swipe-track{will-change:transform,opacity;transition:transform 220ms cubic-bezier(.22,1,.36,1),opacity 220ms ease;}
+.tabpane.swipe-drag{transition:none!important;}
+.tabpane.swipe-exit{transform:translate3d(var(--swipe-exit-x,0),0,0) scale(.985);opacity:.68;}
+@media (prefers-reduced-motion:reduce){.tabpane.swipe-track,.tabpane.swipe-drag,.tabpane.swipe-exit{transition:none!important;transform:none!important;opacity:1!important;}}
+:root{--t-lec:#2F55D4;--t-pr:#0B8458;--t-lab:#C2410C;--t-cur:#7C3AED}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--t-lec:#8FB0FF;--t-pr:#5EDDA2;--t-lab:#FFA062;--t-cur:#C9A8FF}}
+:root[data-theme="dark"]{--t-lec:#8FB0FF;--t-pr:#5EDDA2;--t-lab:#FFA062;--t-cur:#C9A8FF}
+[data-t="лек"]{--tc:var(--t-lec)}[data-t="пр"]{--tc:var(--t-pr)}[data-t="лаб"]{--tc:var(--t-lab)}[data-t="кур"]{--tc:var(--t-cur)}
+.tchip{font-weight:700;letter-spacing:.01em;color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,var(--surface));border-color:color-mix(in srgb,var(--tc) 50%,transparent)}
+.tbadge[data-t]{background:color-mix(in srgb,var(--tc) 16%,var(--surface));color:var(--tc)}
+.night-pick{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:10px 0 4px}
+.night-pick .lab{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.night-pick b{font-family:var(--f-mono);font-size:32px;color:var(--night)}
+.npick-alt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.var.static{cursor:default}.var.static:active{transform:none}
+html,body{background:var(--bg)}body{background:transparent}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .6s ease;animation:tw2 6s ease-in-out infinite;
+background-image:radial-gradient(1.6px 1.6px at 12% 14%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 78% 9%,#fff,transparent 60%),radial-gradient(1.8px 1.8px at 90% 38%,#ffd9a0,transparent 60%),radial-gradient(1.2px 1.2px at 6% 52%,#fff,transparent 60%),radial-gradient(1.6px 1.6px at 62% 66%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 30% 82%,#ffd9a0,transparent 60%),radial-gradient(1.6px 1.6px at 88% 90%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 46% 30%,#fff,transparent 60%)}
+:root[data-theme="dark"] body::before{opacity:.55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body::before{opacity:.55}}
+@keyframes tw2{0%,100%{filter:brightness(1)}50%{filter:brightness(.55)}}
+@keyframes zfloat{0%{transform:translate(0,0) scale(.8);opacity:0}30%{opacity:.9}100%{transform:translate(16px,-30px) scale(1.15);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes logospin{from{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.25)}to{transform:rotate(360deg) scale(1)}}
+@keyframes confly{from{transform:translate(0,0) rotate(0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.4);opacity:0}}
+.half.bed{position:relative}.zz{position:absolute;right:14px;top:34px}.zz i{position:absolute;font-style:normal;font-weight:800;color:var(--night);opacity:0;animation:zfloat 2.8s ease-in-out infinite}
+.zz i:nth-child(2){animation-delay:.9s;font-size:15px}.zz i:nth-child(3){animation-delay:1.8s;font-size:19px}
+.half.wake .lab .ic{animation:spin 16s linear infinite}
+.quip{margin:2px 0 8px;font-size:13px;color:var(--muted);font-style:italic}
+.logo.spin{animation:logospin .9s var(--ease)}
+.conf{position:fixed;z-index:200;pointer-events:none;font-style:normal;font-size:18px;animation:confly 1.1s var(--ease) forwards}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,24px);opacity:0;z-index:150;padding:10px 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;pointer-events:none;transition:transform .35s var(--spring),opacity .25s ease}
+#toast.on{transform:translate(-50%,0);opacity:1}
+</style>
+<style>
+/* Micro-interactions: keep motion compositor-friendly and respect reduced-motion. */
+@keyframes skeleton-shimmer{to{background-position:-200% 0}}
+.skeleton{display:block;border-radius:10px;background:linear-gradient(100deg,var(--line) 25%,color-mix(in srgb,var(--surface) 55%,var(--line)) 38%,var(--line) 52%);background-size:200% 100%;animation:skeleton-shimmer 1.35s ease-in-out infinite}
+.skeleton-card{padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);display:grid;gap:12px}
+.skeleton-line{height:12px}.skeleton-line.short{width:36%}.skeleton-line.mid{width:68%}.skeleton-block{height:42px}
+</style>
+
+<style id="v17-premium-ui">
+:root{--bg:#090d19;--surface:#131a2c;--ink:#eef1ff;--muted:#9ca8c6;--line:#28334e;--night:#a7b3ff;--night-soft:#20294b;--dawn:#ffbd73;--dawn-soft:#3b291b;--on-night:#11172a}
+:root[data-theme="light"]{--bg:#edf0f7;--surface:#fff;--ink:#141a2e;--muted:#5a6479;--line:#d8ddea;--night:#3445bf;--night-soft:#e2e6fb;--dawn:#b85f00;--dawn-soft:#ffebcf;--on-night:#fff}
+body{background:radial-gradient(ellipse at 12% 0%,rgba(92,111,255,.13),transparent 36%),radial-gradient(ellipse at 92% 22%,rgba(179,104,255,.08),transparent 30%),var(--bg);padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))}
+.panel,.hero,.route-hero{border-radius:24px;box-shadow:0 12px 34px rgba(0,0,0,.16);}
+.panel{border-color:color-mix(in srgb,var(--line) 76%,transparent)}
+.maintabs{position:fixed;z-index:50;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom,0px));max-width:536px;margin:0 auto;padding:6px;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:22px;box-shadow:0 10px 40px rgba(0,0,0,.28);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.maintabs button{min-height:54px;flex-direction:column;gap:3px;padding:6px 3px;font-size:11px;border-radius:16px;color:var(--muted)}
+.maintabs button .ic{width:21px;height:21px}
+.maintabs button[aria-pressed="true"]{background:linear-gradient(135deg,var(--night),color-mix(in srgb,var(--night) 64%,#b18aff));color:var(--on-night);box-shadow:0 5px 18px color-mix(in srgb,var(--night) 28%,transparent)}
+.top{margin-bottom:4px}.tabpane{gap:16px;animation:section-in .24s ease-out both}.tabpane[hidden]{display:none!important}
+@keyframes section-in{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.route-hero{position:relative;overflow:hidden;padding:25px 22px 23px;background:linear-gradient(135deg,#202b59 0%,#18213d 56%,#30244e 100%);border:1px solid rgba(180,190,255,.2);color:#f5f6ff}
+.route-hero:after{content:"";position:absolute;width:190px;height:190px;right:-70px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(168,180,255,.28),transparent 70%);pointer-events:none}
+.route-hero .eyebrow{margin:0 0 8px;color:#b8c4ff;font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700}
+.route-hero h1{font-family:var(--f-display);font-size:clamp(25px,7vw,34px);line-height:1.18;margin:0 0 10px;letter-spacing:-.04em}
+.route-hero p:last-child{max-width:310px;margin:0;color:#c5cbe5;font-size:13px}
+.route-orb{float:right;width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);font-size:27px;color:#c4ceff;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.commute-panel{padding:20px;gap:12px}.field-label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}.commute-select{width:100%;min-height:48px;padding:12px 38px 12px 13px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);outline-offset:3px}
+.commute-main{margin-top:16px;padding:20px;border-radius:20px;background:radial-gradient(ellipse at 100% 0%,rgba(159,174,255,.17),transparent 50%),linear-gradient(145deg,color-mix(in srgb,var(--night-soft) 82%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--night) 32%,var(--line));display:flex;flex-direction:column;gap:5px}
+.commute-kicker{font-size:12px;color:var(--muted);font-weight:600}.commute-time{font-family:var(--f-display);font-size:clamp(42px,13vw,58px);letter-spacing:-.055em;line-height:1.2;color:var(--night);font-variant-numeric:tabular-nums}.commute-sub{font-size:13px;color:var(--muted)}.commute-sub b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.commute-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.commute-metrics>div{min-width:0;padding:12px 10px;border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--surface) 80%,transparent)}.commute-metrics span{display:block;color:var(--muted);font-size:10px;line-height:1.35;margin-bottom:6px}.commute-metrics strong{font-size:14px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.commute-destination{display:flex;gap:12px;align-items:center;padding:15px 4px 2px}.destination-pin{width:38px;height:38px;display:grid;place-items:center;flex:none;border-radius:13px;background:var(--dawn-soft);color:var(--dawn);font-size:22px}.commute-destination span:not(.destination-pin){display:block;color:var(--muted);font-size:12px}.commute-destination strong{display:block;font-size:14px;margin:3px 0}.commute-destination small{display:block;color:var(--muted);font-size:11px}.commute-empty{padding:22px 12px;text-align:center;color:var(--muted)}.commute-empty .ic{width:28px;height:28px;display:block;margin:0 auto 8px}
+.route-notes{padding:20px}.route-notes h2{margin:0 0 16px;font-size:17px}.route-note{display:flex;align-items:flex-start;gap:12px;margin:14px 0}.route-note-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--night-soft);color:var(--night);font-size:19px}.route-note strong{font-size:13px}.route-note p{margin:3px 0 0;color:var(--muted);font-size:12px}.route-notes>.hint{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+@media(min-width:700px){.maintabs{bottom:16px}.wrap{padding-bottom:16px}.route-hero{padding:30px}.commute-panel,.route-notes{padding:24px}}
+@media(prefers-reduced-motion:reduce){.tabpane{animation:none!important}.maintabs,.panel,.route-hero{backdrop-filter:none}}
+</style>
+
+<style>
+/* v20 compact sleep controls */
+#tab-sleep .subnav{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px;padding:3px}
+#tab-sleep .subnav button{min-height:43px;padding:6px 2px;font-size:10px;white-space:normal}
+#tab-sleep .subnav .ic{width:17px;height:17px}
+#tab-sleep #sp-var{padding:11px;gap:8px}
+#tab-sleep #sp-var .hint,#tab-sleep #sp-var .note{margin:4px 0;font-size:11px;line-height:1.35}
+#tab-sleep #sp-var .seg{gap:5px}
+#tab-sleep #sp-var .seg .btn{padding:7px 5px;min-height:43px;font-size:12px}
+#tab-sleep #sp-var .variant-choices{gap:6px;margin-top:7px}
+#tab-sleep #sp-var .var{padding:9px 10px;min-height:53px;border-radius:12px}
+#tab-sleep #sp-var .vs{font-size:10px}
+#tab-sleep #sp-var .vb{font-size:19px}
+#tab-sleep #sp-calc{padding:12px;gap:9px}
+@media(max-width:370px){#tab-sleep .subnav button{font-size:9px}#tab-sleep .subnav .ic{width:15px;height:15px}}
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><div class="sp-c"><div class="sp-logo" id="splash-logo"></div><div class="sp-name">Пары и сон</div><div class="sp-sub" id="splash-sub"></div><div class="sp-bar"><span></span></div></div></div>
+<div id="toast" role="status"></div>
+<div class="install-bar" id="ibar" hidden><div class="ib-logo" id="ib-logo"></div><div class="ib-t" id="ib-t"></div><div class="ib-sub" id="ib-sub"></div><div class="ib-act"><button class="btn" id="ib-no" type="button"></button><button class="btn pri" id="ib-yes" type="button"></button></div></div>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15.5" cy="7.5" r="1"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><path d="M7.5 14h9"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 1.5M5 4.5L3 6.5M19 4.5l2 2"/></symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M3 12h15a3 3 0 1 1-3 3M3 16h7"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16v4M17 18h4"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M5 8h12v6a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17M8 3v2M12 3v2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+    <symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4M16 11h.01M18 14h.01"/></symbol>
+    <symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-sunrise" viewBox="0 0 24 24"><path d="M17 18a5 5 0 0 0-10 0M12 3v4M4.2 10.2l1.4 1.4M19.8 10.2l-1.4 1.4M2 18h20M9 5l3-2 3 2"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  </defs>
+</svg>
+
+<dialog id="dict"><div class="dh"><h2><svg class="ic"><use href="#i-book"/></svg>Словарь</h2><button class="btn" id="dclose" type="button">×</button></div><svg class="ic dsr"><use href="#i-search"/></svg><input id="dq" type="search" autocomplete="off"><div id="dl"></div></dialog>
+<dialog id="setdlg"><div class="dh"><h2><svg class="ic"><use href="#i-sliders"/></svg>Настройки</h2><button class="btn" id="sclose" type="button"></button></div><section class="panel" id="sp-set">
+      <h2><svg class="ic"><use href="#i-sliders"/></svg>Настройки режима</h2>
+      <div class="form">
+        <div class="field"><label for="f-wake"><svg class="ic"><use href="#i-sun"/></svg>Подъём в дни без пар</label><input id="f-wake" type="time"></div>
+        <div class="field"><label for="f-sleep"><svg class="ic"><use href="#i-moon"/></svg>Сколько спать, ч</label><input id="f-sleep" type="number" min="3" max="12" step="0.5"></div>
+        <div class="field"><label for="f-prep"><svg class="ic"><use href="#i-bolt"/></svg>Впритык: за сколько минут до пары</label><input id="f-prep" type="number" min="0" max="240" step="5"></div>
+        <div class="field"><label for="f-fall"><svg class="ic"><use href="#i-bed"/></svg>Засыпаю за, мин</label><input id="f-fall" type="number" min="0" max="120" step="5"></div>
+        <div class="field wide"><label>Свой подъём по дням: за сколько минут до первой пары (пусто, если общее значение). Работает в режиме «Своё».</label><div class="daygrid" id="daygrid"></div></div>
+        <label class="check"><input id="f-unsure" type="checkbox"><span>Не учитывать пары ОИЗ без дат. Их стоит уточнить у старосты.</span></label>
+        <button class="reset" id="f-reset" type="button">Сбросить настройки</button>
+      </div>
+      <h2 style="margin-top:6px"><svg class="ic"><use href="#i-phone"/></svg>Значок на рабочий стол</h2>
+      <div class="install">
+        <div class="inst-logo" id="inst-logo"></div>
+        <div>
+          <p class="hint">Android, Chrome: меню с тремя точками, затем «Добавить на главный экран». iPhone, Safari: кнопка «Поделиться», затем «На экран Домой».</p>
+        </div>
+      </div>
+      <h2 style="margin-top:6px"><svg class="ic"><use href="#i-sliders"/></svg>Где хранятся настройки</h2>
+      <p class="hint">Подгруппа, режим, палитра и отметки «меня нет» сохраняются в памяти браузера и дублируются в cookie на год. Если очистить данные сайта или открыть страницу в другом браузере, всё сбросится.</p>
+    </section></dialog>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" id="logo"></span>
+      <div>
+        <p class="eyebrow">Группа 10305126 · МСФ</p>
+        <h1>Пары и сон</h1>
+      </div>
+    </div>
+    <div class="hbtns"><button class="iconbtn langbtn" id="lang-btn" type="button" aria-label="Language" aria-expanded="false" aria-controls="langpop"></button>
+    <button class="iconbtn" id="set-btn" type="button" aria-label="Настройки"></button>
+    <button class="iconbtn" id="dict-btn" type="button" aria-label="Словарь"></button>
+    <button class="iconbtn" id="look-btn" type="button" aria-label="Оформление" aria-expanded="false" aria-controls="lookpop"></button></div>
+    <div class="lookpop" id="lookpop" hidden>
+      <p class="look-title">Цвет и тема</p><div class="seg3" id="theme-seg"></div>
+      <p class="look-title">Цветовая палитра</p>
+      <div class="pals" id="pals"></div>
+    </div>
+    <div class="lookpop" id="langpop" hidden></div>
+  </header>
+
+  <nav class="maintabs" id="maintabs" aria-label="Разделы">
+    <button type="button" id="mt-sched" data-tab="sched" aria-pressed="true"></button>
+    <button type="button" id="mt-sleep" data-tab="sleep" aria-pressed="false"></button>
+  </nav>
+
+  <div class="tabpane" id="tab-sched">
+    <div class="subsel" id="subsel" role="group" aria-label="Подгруппа"></div>
+    <div>
+      <div class="switch" id="weekswitch"></div>
+      <div class="tabs" id="tabs"></div>
+    </div>
+    <div class="day" id="day"></div>
+  </div>
+
+  <div class="tabpane" id="tab-sleep" hidden>
+    <nav class="subnav" id="subnav" aria-label="Разделы сна"></nav>
+
+    <div class="sleep-overview" id="sleep-overview">
+      <section class="hero" id="hero" aria-live="polite"></section>
+      <section class="panel" id="sp-var"></section>
+    </div>
+
+    <section class="panel" id="sp-calc" hidden></section>
+
+    <section class="panel" id="sp-week" hidden>
+      <h2><svg class="ic"><use href="#i-list"/></svg>Подъём и отбой по дням</h2>
+      <p class="hint" id="week-hint"></p>
+      <div class="tablewrap"><table id="plan"></table></div>
+    </section>
+
+    <section class="panel" id="sp-tips" hidden>
+      <h2><svg class="ic"><use href="#i-wind"/></svg>Не получается уснуть</h2>
+      <p class="hint">Что сделать до отбоя и что попробовать, если лежите и не спите. Это общие советы, не лечение.</p>
+      <div class="cues" id="cues"></div>
+      <div class="tech">
+        <details id="d-breath">
+          <summary><svg class="ic"><use href="#i-wind"/></svg>Дыхание 4-7-8, 4 цикла</summary>
+          <p>Сядьте или лягте удобно. Вдох носом 4 секунды, пауза 7, медленный выдох ртом 8. Если закружится голова, дышите как обычно.</p>
+          <div class="brwrap">
+            <div class="brc" id="brc"><span class="ph" id="brph">Готово</span><span class="sec" id="brsec">4-7-8</span></div>
+            <div class="brsub" id="brsub">Нажмите «Начать» и следите за кругом.</div>
+            <button class="btn pri" id="brbtn" type="button">Начать</button>
+          </div>
+        </details>
+        <details>
+          <summary><svg class="ic"><use href="#i-user"/></svg>Расслабление мышц по очереди</summary>
+          <ol>
+            <li>Лягте на спину. Сожмите стопы на 5 секунд, потом отпустите на 10–15.</li>
+            <li>Так же двигайтесь вверх: голени, бёдра, живот, кисти, плечи.</li>
+            <li>В конце напрягите и расслабьте лицо: брови, челюсть, лоб.</li>
+            <li>Весь круг занимает 10–15 минут. Между группами мышц дышите ровно.</li>
+          </ol>
+        </details>
+        <details>
+          <summary><svg class="ic"><use href="#i-sparkles"/></svg>Слова на выбранную букву</summary>
+          <p>Это способ отвлечь голову от мыслей. Выберите нейтральное слово, например «звезда». На каждую букву придумывайте слова: на «з» это зима, забор, зонт. Представляйте каждое слово несколько секунд и переходите к следующему. Не связывайте слова в историю.</p>
+        </details>
+        <details>
+          <summary><svg class="ic"><use href="#i-clock"/></svg>Если лежите больше 20 минут</summary>
+          <ul>
+            <li>Не смотрите на часы и не заставляйте себя заснуть.</li>
+            <li>Встаньте, включите тусклый свет и займитесь чем-то тихим без экрана: книга, растяжка, тёплая вода.</li>
+            <li>Возвращайтесь в кровать, когда начнёт клонить в сон.</li>
+            <li>Кровать только для сна. Игры и телефон лёжа приучают мозг не спать там.</li>
+          </ul>
+        </details>
+        <details>
+          <summary><svg class="ic"><use href="#i-pencil"/></svg>Выгрузить мысли на бумагу</summary>
+          <p>За час до отбоя на 5 минут запишите всё, что крутится в голове: дела на завтра, вопросы, тревоги. Когда это лежит на бумаге, голове проще отпустить.</p>
+        </details>
+        <details>
+          <summary><svg class="ic"><use href="#i-heart"/></svg>Когда нужен врач</summary>
+          <p>Если проблемы со сном держатся больше трёх недель или из-за них трудно учиться, стоит обратиться к врачу. Таблетки и добавки без назначения я не советую.</p>
+        </details>
+      </div>
+    </section>
+
+    
+  </div>
+
+
+
+
+  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппы по словам старосты: информатика у 1-й подгруппы по вторникам и в четверг на 2-й неделе, у 2-й по пятницам и в четверг на 1-й неделе. Лабораторная по химии в четверг общая для всей группы, без подгрупп. Какие именно недели она идёт, не подтверждено, поэтому она помечена «предположение». Если выбрана «Обе», подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
+</main>
+
+
+<script>
+const SLOTS = [['09:55','11:30'],['12:00','13:35'],['13:55','15:30'],['15:40','17:15'],['17:45','19:20'],['19:30','21:05']];
+const DAYS = ['пн','вт','ср','чт','пт','сб'];
+const HOLIDAYS = { '2026-11-07': 'День Октябрьской революции' };
+const BASE = Date.UTC(2026, 7, 31);
+// d: день 1-6, s: пара 0-5, w: неделя (0 обе), sub: подгруппа 1 или 2, unsure: без дат, guess: предположение
+const L = [
+  {d:1,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:1,s:2,w:1,t:'пр',n:'ОИЗ. Инженерная графика',r:'ауд. 510, к. 8',p:'',unsure:1},
+  {d:1,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:1,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
+  {d:1,s:4,w:0,t:'лек',n:'Инженерная графика',r:'ауд. 4п, к. 8',p:'Кулащик Н.Ф.'},
+
+  {d:2,s:1,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
+  {d:2,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 13, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:2},
+  {d:2,s:2,w:0,t:'пр',n:'Инженерная графика',r:'ауд. 507, к. 8',p:''},
+  {d:2,s:3,w:0,t:'лек',n:'Математика',r:'ауд. 2П, к. 17',p:'Крушевский Е.А.'},
+  {d:2,s:4,w:0,t:'лек',n:'Физика',r:'ауд. 2п, к. 17',p:'Бобученко Д.С.'},
+
+  {d:3,s:2,w:0,t:'пр',n:'Физика',r:'ауд. 203, к. 17',p:'Бобученко Д.С.'},
+  {d:3,s:3,w:0,t:'лек',n:'Химия',r:'ауд. 2п, к. 17',p:'Стрелкова Е.В.'},
+  {d:3,s:4,w:1,t:'лек',n:'Информатика',r:'ауд. 2П, к. 17',p:'Кавальчук О.Н.'},
+  {d:3,s:4,w:2,t:'лек',n:'Физика',r:'ауд. 2п, к. 17',p:'Бобученко Д.С.'},
+  {d:3,s:5,w:2,t:'лек',n:'Введение в инженерное образование',r:'ауд. 405, к. 6',p:'преподаватель не назначен',unsure:1},
+
+  {d:4,s:0,w:1,t:'кур',n:'Кураторский / информационный час',r:'ауд. 208, к. 6',p:'Фёдорцев Р.В.'},
+  {d:4,s:1,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.'},
+  {d:4,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:4,s:2,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.'},
+  {d:4,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
+  {d:4,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
+  {d:4,s:4,w:2,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
+  {d:4,s:4,w:1,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:2},
+  {d:4,s:4,w:0,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',guess:1},
+  {d:4,s:5,w:1,t:'пр',n:'ОИЗ. Математика',r:'ауд. 220, к. 6',p:'Тульев В.В.',unsure:1},
+
+  {d:5,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 12, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:1},
+  {d:5,s:1,w:0,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:2},
+  {d:5,s:2,w:0,t:'пр',n:'Математика',r:'ауд. 221, к. 6',p:'Доронина А.В.'},
+  {d:5,s:3,w:1,t:'пр',n:'Химия',r:'ауд. 508а, к. 11',p:'Стрелкова Е.В.'},
+  {d:5,s:3,w:2,t:'пр',n:'Инженерная графика',r:'ауд. 511, к. 8',p:''},
+  {d:5,s:4,w:0,t:'пр',n:'Английский язык',r:'ауд. 430, к. 18',p:'Лапко О.А.'},
+
+  {d:6,s:1,w:0,t:'лек',n:'Технология конструкционных материалов',r:'ауд. 4п, к. 8',p:'Мамонов А.М.'},
+  {d:6,s:2,w:1,t:'пр',n:'ОИЗ. Физика',r:'ауд. 201, к. 17',p:'Бобученко Д.С.',unsure:1},
+  {d:6,s:2,w:2,t:'пр',n:'Английский язык',r:'ауд. 430, к. 18',p:'Лапко О.А.'},
+  {d:6,s:3,w:2,t:'пр',n:'Введение в инженерное образование',r:'ауд. 307, к. 6',p:'преподаватель не назначен'}
+];
+const TYPE = { 'лек': 'Лекция', 'пр': 'Практика', 'лаб': 'Лабораторная', 'кур': 'Кураторский час' };
+const TICON = { 'лек': 'book', 'пр': 'pencil', 'лаб': 'flask', 'кур': 'user' };
+const $ = id => document.getElementById(id);
+function logoSvg(u) {
+  return "<svg role=\"img\" aria-label=\"Пары и сон\" viewBox=\"0 0 512 512\"><defs><linearGradient id=\"g"+u+"\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" style=\"stop-color:var(--lg1,#5568F0)\"/><stop offset=\"1\" style=\"stop-color:var(--lg2,#171F6B)\"/></linearGradient></defs><rect width=\"512\" height=\"512\" rx=\"116\" fill=\"url(#g"+u+")\"/><g transform=\"translate(256 256) scale(1) translate(-256 -256)\"><g opacity=\".3\" fill=\"#F4F6FF\"><circle cx=\"256\" cy=\"256\" r=\"172\" fill=\"none\" stroke=\"#F4F6FF\" stroke-width=\"12\"/><path d=\"M417.4 278.7L451.0 290.4L442.1 323.7L407.1 317.1ZM384.4 356.4L407.7 383.3L383.3 407.7L356.4 384.4ZM317.1 407.1L323.7 442.1L290.4 451.0L278.7 417.4ZM233.3 417.4L221.6 451.0L188.3 442.1L194.9 407.1ZM155.6 384.4L128.7 407.7L104.3 383.3L127.6 356.4ZM104.9 317.1L69.9 323.7L61.0 290.4L94.6 278.7ZM94.6 233.3L61.0 221.6L69.9 188.3L104.9 194.9ZM127.6 155.6L104.3 128.7L128.7 104.3L155.6 127.6ZM194.9 104.9L188.3 69.9L221.6 61.0L233.3 94.6ZM278.7 94.6L290.4 61.0L323.7 69.9L317.1 104.9ZM356.4 127.6L383.3 104.3L407.7 128.7L384.4 155.6ZM407.1 194.9L442.1 188.3L451.0 221.6L417.4 233.3Z\"/></g><path d=\"M232.6 158.1 A104 104 0 1 0 331.4 303.4 A88 88 0 0 1 232.6 158.1 Z\" fill=\"#F4F6FF\"/><path d=\"M324 150L324 174L350 186L376 174L376 150L350 160Z\" fill=\"#E8A53A\"/><path d=\"M350 118L398 138L350 158L302 138Z\" fill=\"#FFC261\"/><path d=\"M398 138V172\" stroke=\"#FFC261\" stroke-width=\"5\"/><circle class=\"tw\" cx=\"398\" cy=\"176\" r=\"7\" fill=\"#FFC261\"/></g></svg>";
+}
+const ic = (n, c) => '<svg class="ic' + (c ? ' ' + c : '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
+const pad = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const dow = d => (d.getDay() + 6) % 7 + 1;
+const mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const hm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+const hmDate = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const dur = m => { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return [h ? h + ' ' + t('ч') : '', r || !h ? r + ' ' + t('мин') : ''].filter(Boolean).join(' '); };
+const mondayOf = d => addDays(d, -(dow(d) - 1));
+function weekNo(d) {
+  const m = mondayOf(d);
+  const days = Math.round((Date.UTC(m.getFullYear(), m.getMonth(), m.getDate()) - BASE) / 864e5);
+  return ((Math.floor(days / 7) % 2) + 2) % 2 === 0 ? 1 : 2;
+}
+const fmtDay = d => d.toLocaleDateString(LOC(), { weekday: 'long', day: 'numeric', month: 'long' });
+const cyc = n => LG !== 'ru' ? t('цикл') : n === 1 ? 'цикл' : (n >= 2 && n <= 4 ? 'цикла' : 'циклов');
+const pairWord = n => LG !== 'ru' ? t('пар') : n === 1 ? 'пара' : (n >= 2 && n <= 4 ? 'пары' : 'пар');
+const wdayName = d => d.toLocaleDateString(LOC(), { weekday: 'long' });
+
+const DEF = { sub: 0, pal: 'indigo', theme: 'dark', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, calc: 'bed', calcBed: '23:30', calcWake: '08:00', until: '03:00', lang: '' };
+let S = { ...DEF };
+let skipped = {};
+// Хранение: память страницы (localStorage), копия в cookie на год. Читаем первое, что нашлось.
+function cookieGet() {
+  try { const m = document.cookie.match(/(?:^|; )rasp_state=([^;]*)/); return m ? JSON.parse(decodeURIComponent(m[1])) : null; } catch (e) { return null; }
+}
+function cookieSet(obj) {
+  try { const v = encodeURIComponent(JSON.stringify(obj)); if (v.length < 3800) document.cookie = 'rasp_state=' + v + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {}
+}
+let loaded = null;
+try { const a = JSON.parse(localStorage.getItem('rasp-settings')), b = JSON.parse(localStorage.getItem('rasp-skipped')); if (a) loaded = { S: a, skipped: b || {} }; } catch (e) {}
+if (!loaded) loaded = cookieGet();
+if (loaded && loaded.S) { S = { ...DEF, ...loaded.S }; skipped = loaded.skipped || {}; }
+S.mode = ['early', 'late', 'custom'].includes(S.mode) ? S.mode : 'early';
+if (!S.leadDay || typeof S.leadDay !== 'object') S.leadDay = {};
+if (S.prep === 90) S.prep = 60;
+if (S.wake === '09:00') S.wake = '10:00';
+S.sub = [0, 1, 2].includes(Number(S.sub)) ? Number(S.sub) : 0;
+delete S.view;
+const LI = { en: 0, fr: 1, tr: 2 };
+let LG = S.lang || (navigator.language || 'ru').slice(0, 2);
+if (LG !== 'ru' && !(LG in LI)) LG = 'ru';
+const LOC = () => ({ ru: 'ru-RU', en: 'en-GB', fr: 'fr-FR', tr: 'tr-TR' })[LG];
+const T = {
+'Расписание':['Schedule','Emploi du temps','Ders programı'],'Сон':['Sleep','Sommeil','Uyku'],
+'Маршрут':['Route','Itinéraire','Rota'],'Маршрут до пары':['Route to class','Itinéraire vers le cours','Derse gidiş'],'Выйти вовремя':['Leave on time','Partir à l’heure','Zamanında çık'],'Расчёт пешего пути от общежития № 6 БНТУ до корпуса':['Walking time from BNTU dormitory No. 6 to the building','Temps de marche du dortoir n° 6 de BNTU au bâtiment','BNTU 6 numaralı yurttan binaya yürüme süresi'],'Выбери пару из расписания':['Choose a class from the schedule','Choisissez un cours dans l’emploi du temps','Programdan ders seç'],'Как считаем':['How it is calculated','Comment c’est calculé','Nasıl hesaplanır'],'Обычный шаг':['Normal walking pace','Allure de marche normale','Normal yürüyüş temposu'],'Скорость около 4 км/ч':['About 4 km/h','Environ 4 km/h','Yaklaşık 4 km/sa'],'Запас до пары':['Arrival buffer','Marge avant le cours','Derse erken varış payı'],'Приход к входу в корпус за 5 минут до начала':['Arrive at the building entrance 5 minutes early','Arriver à l’entrée 5 minutes avant le début','Ders başlamadan 5 dakika önce bina girişinde ol'],'Из комнаты до выхода':['Room to dorm exit','De la chambre à la sortie du dortoir','Odadan yurt çıkışına'],'Примерно 2 минуты; время подготовки отдельно не добавляем':['About 2 minutes; preparation time is not added separately','Environ 2 minutes ; le temps de préparation n’est pas ajouté','Yaklaşık 2 dakika; hazırlanma süresi ayrıca eklenmez'],'Расстояния по пешеходным маршрутам Яндекс Карт; фактическое время может немного отличаться.':['Distances use walking routes in Yandex Maps; actual time may vary slightly.','Distances selon les itinéraires piétons de Yandex Maps ; le temps réel peut varier.','Mesafeler Yandex Haritalar yaya rotalarına göredir; gerçek süre biraz değişebilir.'],'До выхода из общаги':['Leave dorm by','Départ du dortoir','Yurttan çıkış'],'Из комнаты примерно':['Leave room around','Départ de la chambre vers','Odadan çıkış yaklaşık'],'Пешком':['On foot','À pied','Yürüyerek'],'мин ходьбы':['min walking','min de marche','dk yürüyüş'],'До корпуса':['To building','Jusqu’au bâtiment','Binaya'],'Выбери день, на который смотришь расписание.':['Choose the day shown in your schedule.','Choisissez le jour affiché dans l’emploi du temps.','Programda görüntülenen günü seç.'],'На выбранный день нет пар с проверенным пешим маршрутом.':['No classes with a verified walking route on the selected day.','Aucun cours avec itinéraire piéton vérifié ce jour-là.','Seçilen gün için doğrulanmış yürüme rotalı ders yok.'],'Нет пары с корпусом, для которого проверен маршрут.':['No class in a building with a verified route.','Aucun cours dans un bâtiment avec un itinéraire vérifié.','Doğrulanmış rotası olan binada ders yok.'],'Вход в корпус':['Building entrance','Entrée du bâtiment','Bina girişi'],'Пара начинается':['Class starts','Début du cours','Ders başlangıcı'],'Расстояние':['Distance','Distance','Mesafe'],
+'Подгруппа':['Subgroup','Sous-groupe','Alt grup'],'Обе':['Both','Les deux','İkisi'],
+'Эта неделя':['This week','Cette semaine','Bu hafta'],'Следующая':['Next','Suivante','Gelecek'],
+'нед.':['wk','sem.','hf.'],'неделя':['week','semaine','hafta'],'пар':['classes','cours','ders'],
+'пн':['Mon','Lun','Pzt'],'вт':['Tue','Mar','Sal'],'ср':['Wed','Mer','Çar'],'чт':['Thu','Jeu','Per'],'пт':['Fri','Ven','Cum'],'сб':['Sat','Sam','Cmt'],
+'Лекция':['Lecture','Cours magistral','Ders'],'Практика':['Seminar','TD','Uygulama'],'Лабораторная':['Lab','TP','Laboratuvar'],'Кураторский час':['Curator hour','Heure du tuteur','Danışman saati'],
+'Инженерная графика':['Engineering Graphics','Dessin technique','Mühendislik grafiği'],'Информатика':['Computer Science','Informatique','Bilişim'],
+'Математика':['Mathematics','Mathématiques','Matematik'],'Физика':['Physics','Physique','Fizik'],'Химия':['Chemistry','Chimie','Kimya'],
+'Физическая культура':['Physical Education','Éducation physique','Beden eğitimi'],'Английский язык':['English','Anglais','İngilizce'],
+'Технология конструкционных материалов':['Structural Materials Technology','Technologie des matériaux de structure','Yapı malzemeleri teknolojisi'],
+'Профессиональное обучение по профессиям рабочих':['Vocational Training for Skilled Trades','Formation professionnelle aux métiers ouvriers','İşçi meslekleri mesleki eğitimi'],
+'Введение в инженерное образование':['Introduction to Engineering Education','Introduction à la formation d’ingénieur','Mühendislik eğitimine giriş'],
+'Кураторский / информационный час':['Curator / information hour','Heure du tuteur / d’information','Danışman / bilgilendirme saati'],
+'ауд.':['rm.','salle','derslik'],'лаб.':['lab','labo','lab.'],'к.':['bldg','bât.','bina'],'мастерские':['workshops','ateliers','atölyeler'],
+'Ближайший подъём':['Next wake-up','Prochain lever','Sonraki kalkış'],'Отбой':['Bedtime','Coucher','Yatış'],'Подъём':['Wake-up','Lever','Kalkış'],
+'сон':['sleep','sommeil','uyku'],'ч':['h','h','sa'],'мин':['min','min','dk'],'пары с':['classes from','cours dès','dersler:'],
+'пар нет':['no classes','pas de cours','ders yok'],'нет пар':['no classes','pas de cours','ders yok'],'пары нет':['no class','pas de cours','ders yok'],
+'Когда ложиться':['When to sleep','Quand se coucher','Ne zaman yatmalı'],'Пораньше':['Early','Tôt','Erken'],'Впритык':['Last minute','Juste à temps','Son dakika'],'Своё':['Custom','Perso','Özel'],'подъём':['wake-up','lever','kalkış'],
+'дальше в':['next at','suivant à','sonraki:'],'через':['in','dans','sonra:'],'В этот день пар нет.':['No classes this day.','Pas de cours ce jour.','Bu gün ders yok.'],
+'без дат, уточнить':['no dates, check','sans dates, à vérifier','tarih yok, teyit et'],'предположение, уточнить':['assumption, check','hypothèse, à vérifier','tahmin, teyit et'],
+'идёт сейчас':['now','en cours','şimdi'],'окно':['gap','pause','boşluk'],
+'Меня нет на парах в этот день':['I’m absent this day','Je suis absent ce jour','Bu gün yokum'],'Вернуть пары на этот день':['Restore classes for this day','Rétablir les cours','Dersleri geri getir'],
+'День':['Day','Jour','Gün'],'Пары':['Classes','Cours','Dersler'],'праздник':['holiday','férié','tatil'],'вас нет':['absent','absent','yok'],
+'Варианты':['Options','Options','Seçenekler'],'Неделя':['Week','Semaine','Hafta'],'Уснуть':['Fall asleep','S’endormir','Uyumak'],'Настройки':['Settings','Réglages','Ayarlar'],
+'Группа 10305126 · МСФ':['Group 10305126 · MSF','Groupe 10305126 · MSF','Grup 10305126 · MSF'],
+'Подъём и отбой по дням':['Wake-up and bedtime by day','Lever et coucher par jour','Günlük kalkış ve yatış'],
+'Не получается уснуть':['Can’t fall asleep','Difficulté à dormir','Uyuyamıyorum'],'Настройки режима':['Routine settings','Réglages du rythme','Düzen ayarları'],
+'Подъём в дни без пар':['Wake-up on days without classes','Lever sans cours','Dersiz günlerde kalkış'],'Сколько спать, ч':['Hours of sleep','Heures de sommeil','Uyku süresi, sa'],
+'Сбросить настройки':['Reset settings','Réinitialiser','Ayarları sıfırla'],'Значок на рабочий стол':['Home screen icon','Icône d’écran d’accueil','Ana ekran simgesi'],
+'Где хранятся настройки':['Where settings are stored','Où sont stockés les réglages','Ayarlar nerede saklanır'],
+'Словарь':['Dictionary','Dictionnaire','Sözlük'],"Ночная занятость": ["Busy at night", "Occupé la nuit", "Gece meşgulüm"], "Освобожусь в": ["Free at", "Libre à", "Boşalacağım:"], "Отбой был в {0}. Сейчас пора спать, подъём через {1}.": ["Bedtime was {0}. Time to sleep now, wake-up in {1}.", "Coucher prévu à {0}. Dormez maintenant, lever dans {1}.", "Yatış saati {0} idi. Şimdi uyuma vakti, kalkışa {1} var."], "До отбоя {0}.": ["{0} until bedtime.", "{0} avant le coucher.", "Yatışa {0} var."], "Первая пара {0}, подъём {1}": ["First class {0}, wake-up {1}", "Premier cours {0}, lever {1}", "İlk ders {0}, kalkış {1}"], "впритык, за {0} мин до неё.": ["last minute, {0} min before it.", "juste à temps, {0} min avant.", "son dakika, dersten {0} dk önce."], "за {0} мин до неё.": ["{0} min before it.", "{0} min avant.", "dersten {0} dk önce."], "пораньше, с запасом.": ["early, with margin.", "tôt, avec de la marge.", "erken, paylı."], "В этот день пар нет, подъём {0}.": ["No classes this day, wake-up {0}.", "Pas de cours ce jour, lever {0}.", "Bu gün ders yok, kalkış {0}."], "Это время уже прошло": ["That time has passed", "Cette heure est passée", "Bu saat geçti"], "Выберите время окончания позже текущего.": ["Pick an end time later than now.", "Choisissez une heure plus tardive.", "Şimdiden daha geç bir saat seçin."], ". Хватает.": [". Enough.", ". Suffisant.", ". Yeterli."], ". Терпимо.": [". Acceptable.", ". Passable.", ". Idare eder."], ". Мало.": [". Too little.", ". Trop peu.", ". Az."], "цикл": ["cycle(s)", "cycle(s)", "döngü"], "Днём может клонить в сон. Кофе лучше не позже {0}.": ["You may feel sleepy. Coffee no later than {0}.", "Somnolence possible. Café au plus tard à {0}.", "Gün içinde uykunuz gelebilir. Kahve en geç {0}."], "Такой недосып скажется на парах. Не повторяйте две такие ночи подряд.": ["This will affect your classes. Avoid two such nights in a row.", "Cela se ressentira en cours. Évitez deux nuits pareilles de suite.", "Derslere yansır. Üst üste iki gece böyle olmasın."], "Если будет окно между парами, поспите 20–30 минут, но не позже 16:00, чтобы не сбить следующую ночь.": ["If you have a gap, nap 20–30 min, not after 16:00.", "Pendant une pause, sieste de 20–30 min, pas après 16 h.", "Boşluk varsa 20–30 dk uyuyun, 16:00’dan sonra değil."], "Подъём можно сдвинуть на «впритык» ({0}), если успеваете собраться быстрее.": ["You can move wake-up to “Last minute” ({0}) if you get ready faster.", "Lever possible à {0} (« Juste à temps ») si vous êtes prêt plus vite.", "Daha hızlı hazırlanıyorsanız kalkışı “Son dakika”ya ({0}) kaydırabilirsiniz."], "Чтобы выспаться по плану, освободиться нужно до {0} (5 циклов). Минимум, 4 цикла, до {1}.": ["To sleep as planned, be free by {0} (5 cycles). Minimum, 4 cycles, by {1}.", "Pour dormir comme prévu, soyez libre avant {0} (5 cycles). Minimum, 4 cycles, avant {1}.", "Plana göre uyumak için {0}’a kadar boşalın (5 döngü). En az 4 döngü için {1}."], "За 30–60 минут до конца включите ночной режим на экране и приглушите свет.": ["30–60 min before, turn on night mode and dim the lights.", "30–60 min avant, activez le mode nuit et baissez la lumière.", "30–60 dk önce ekranda gece modunu açın, ışığı kısın."], "Время зависит от дня: считается от первой пары": ["Depends on the day: counted from the first class", "Dépend du jour : calculé depuis le premier cours", "Güne bağlı: ilk dersten hesaplanır"], "Сон идёт циклами примерно по 90 минут, проснуться в конце цикла легче.": ["Sleep runs in ~90-min cycles; waking at the end of one is easier.", "Le sommeil suit des cycles d’environ 90 min ; se réveiller en fin de cycle est plus facile.", "Uyku ~90 dk’lık döngülerdir; döngü sonunda uyanmak kolaydır."], "за {0} мин": ["{0} min before", "{0} min avant", "{0} dk önce"], "Пораньше: примерно за 3 часа до пары, но между 9:00 и 10:00. Впритык: за {0} мин до первой пары. Своё: сколько минут до первой пары задаёте вы.": ["Early: ~3 h before class, between 9:00 and 10:00. Last minute: {0} min before the first class. Custom: you set the minutes.", "Tôt : ~3 h avant, entre 9 h et 10 h. Juste à temps : {0} min avant le premier cours. Perso : vous choisissez.", "Erken: dersten ~3 sa önce, 9:00–10:00 arası. Son dakika: ilk dersten {0} dk önce. Özel: dakikayı siz seçersiniz."], "Вставать за": ["Get up", "Se lever", "Kalkış:"], "мин до пары": ["min before class", "min avant le cours", "dk önce"], "Для некоторых дней недели заданы свои значения в настройках режима.": ["Some weekdays have custom values in settings.", "Certains jours ont des valeurs perso dans les réglages.", "Bazı günler için ayarlarda özel değerler var."], "Отбой в {0} сдвигает весь режим на утро. Если так в несколько дней подряд, лучше вариант «Пораньше».": ["Bedtime at {0} shifts your routine toward morning. For several days in a row, prefer “Early”.", "Un coucher à {0} décale tout le rythme. Plusieurs jours de suite : préférez « Tôt ».", "{0} yatış düzeni sabaha kaydırır. Üst üste birkaç gün ise “Erken” daha iyi."], "Засыпаю за": ["Fall asleep in", "Endormissement", "Uyuma süresi"], "Ваше значение": ["Your value", "Votre valeur", "Sizin değeriniz"], "ч сна": ["h of sleep", "h de sommeil", "sa uyku"], "С запасом": ["Extra", "Confortable", "Bol"], "Идеал": ["Ideal", "Idéal", "İdeal"], "Минимум": ["Minimum", "Minimum", "Asgari"], "Аварийный": ["Emergency", "Urgence", "Acil"], "Нажмите на вариант, и он станет основным в плане и в карточке выше. Отбой учитывает, что вы засыпаете за {0} мин.": ["Tap an option to make it the main one in the plan and card above. Bedtime counts {0} min to fall asleep.", "Touchez une option pour la rendre principale. Le coucher compte {0} min d’endormissement.", "Bir seçeneğe dokunun, plan ve yukarıdaki kartta ana seçenek olur. Yatış, {0} dk uyuma süresini sayar."], "Последний кофе или энергетик до": ["Last coffee or energy drink by", "Dernier café ou boisson énergisante avant", "Son kahve/enerji içeceği:"], "Выключить яркие экраны с": ["Turn off bright screens from", "Éteindre les écrans dès", "Parlak ekranları kapat:"], "Выгрузить мысли на бумагу в": ["Write your thoughts down at", "Noter ses pensées à", "Düşünceleri yazmak:"], "Лечь в кровать в": ["Get in bed at", "Se mettre au lit à", "Yatağa gir:"], "Режим: {0}, неделя {1}. Меняется на вкладке «Расписание».": ["Mode: {0}, week {1}. Changed on the “Schedule” tab.", "Mode : {0}, semaine {1}. Modifiable dans « Emploi du temps ».", "Mod: {0}, hafta {1}. “Ders programı” sekmesinden değişir."], "Праздничный день": ["Public holiday", "Jour férié", "Resmi tatil"], "День Октябрьской революции": ["October Revolution Day", "Jour de la Révolution d’Octobre", "Ekim Devrimi Günü"], "Пар нет.": ["No classes.", "Pas de cours.", "Ders yok."], "Вы отметили, что в этот день вас нет на парах.": ["You marked yourself absent this day.", "Vous avez marqué votre absence ce jour.", "Bu gün için yok olarak işaretlediniz."], "Примечание: это пара игры в Клеш Рояль": ["Note: this is a Clash Royale class", "Note : c’est un cours de Clash Royale", "Not: bu ders Clash Royale saati"], "преподаватель не назначен": ["instructor not assigned", "enseignant non assigné", "öğretim görevlisi atanmadı"], "Готово": ["Ready", "Prêt", "Hazır"], "Пауза": ["Paused", "Pause", "Duraklatıldı"], "Вдох": ["Inhale", "Inspirez", "Nefes al"], "Задержка": ["Hold", "Retenez", "Tut"], "Выдох": ["Exhale", "Expirez", "Nefes ver"], "Начать": ["Start", "Démarrer", "Başla"], "Остановить": ["Stop", "Arrêter", "Durdur"], "Ещё раз": ["Again", "Encore", "Tekrar"], "Цикл {0} из 4": ["Cycle {0} of 4", "Cycle {0} sur 4", "Döngü {0}/4"], "Четыре цикла закончились. Если сна нет, повторите или попробуйте другой способ.": ["Four cycles done. If you’re still awake, repeat or try another method.", "Quatre cycles terminés. Toujours éveillé ? Recommencez ou essayez autre chose.", "Dört döngü bitti. Uyku gelmediyse tekrarlayın veya başka yöntem deneyin."], "Нажмите «Начать», когда будете готовы.": ["Press “Start” when ready.", "Appuyez sur « Démarrer » quand vous êtes prêt.", "Hazır olunca “Başla”ya basın."], "Впритык: за сколько минут до пары": ["Last minute: minutes before class", "Juste à temps : minutes avant le cours", "Son dakika: dersten kaç dk önce"], "Засыпаю за, мин": ["Minutes to fall asleep", "Minutes pour s’endormir", "Uyuma süresi, dk"],'Поиск':['Search','Rechercher','Ara'],
+'Установить приложение':['Install the app','Installer l’application','Uygulamayı yükle'],
+'Откроется с рабочего стола и работает без интернета.':['Opens from your home screen and works offline.','S’ouvre depuis l’écran d’accueil et fonctionne hors ligne.','Ana ekrandan açılır ve internetsiz çalışır.'],
+'Установить':['Install','Installer','Yükle'],'Позже':['Later','Plus tard','Sonra'],
+'Нажмите «Поделиться», затем «На экран Домой».':['Tap “Share”, then “Add to Home Screen”.','Touchez « Partager », puis « Sur l’écran d’accueil ».','“Paylaş”a, sonra “Ana Ekrana Ekle”ye dokunun.'],
+'Понятно':['Got it','Compris','Tamam'],'Подъём по плану был в {0}.':['The planned wake-up was at {0}.','Le lever prévu était à {0}.','Planlanan kalkış {0} idi.'],'общее':['common','commun','ortak'],"Понедельник, держимся": ["Monday, hang in there", "Lundi, courage", "Pazartesi, dayan"], "Вторник, уже легче": ["Tuesday, it gets easier", "Mardi, ça va mieux", "Salı, biraz daha kolay"], "Среда, экватор недели": ["Wednesday, midweek", "Mercredi, mi-semaine", "Çarşamba, haftanın ortası"], "Четверг, почти пятница": ["Thursday, almost Friday", "Jeudi, presque vendredi", "Perşembe, neredeyse cuma"], "Пятница, последний рывок": ["Friday, final push", "Vendredi, dernier effort", "Cuma, son gayret"], "Суббота, а ты на парах": ["Saturday, and you’re in class", "Samedi, et tu es en cours", "Cumartesi, ama derstesin"], "Спи, студент!": ["Sleep, student!", "Dors, étudiant !", "Uyu, öğrenci!"], "Свободен! Отдыхай.": ["Free! Enjoy.", "Libre ! Profite.", "Özgürsün! Keyfini çıkar."],"Калькулятор сна": ["Sleep calculator", "Calculateur de sommeil", "Uyku hesaplayıcı"], "Лягу в": ["Go to bed at", "Je me couche à", "Yatış saati"], "Встану в": ["Wake up at", "Je me lève à", "Kalkış saati"], "Подобранный подъём": ["Suggested wake-up", "Lever conseillé", "Önerilen kalkış"], "Другие варианты": ["Other options", "Autres options", "Diğer seçenekler"], "позже, чем нужно к первой паре": ["later than needed for the first class", "plus tard que nécessaire pour le premier cours", "ilk ders için gerekenden geç"], "Введите время, а приложение посчитает остальное по циклам по 90 минут и с учётом времени засыпания.": ["Enter a time and the app works out the rest in 90-minute cycles, counting time to fall asleep.", "Saisissez une heure, l’appli calcule le reste en cycles de 90 min, endormissement compris.", "Bir saat girin, uygulama gerisini 90 dk’lık döngülerle, uyuma süresi dahil hesaplar."], "Выберите, во сколько уляжетесь, и приложение подберёт подъём по циклам сна.": ["Choose when you’ll go to bed and the app picks a wake-up by sleep cycles.", "Choisissez l’heure du coucher, l’appli propose un lever selon les cycles.", "Ne zaman yatacağınızı seçin, uygulama döngülere göre kalkış saatini seçer."], "Чтобы выспаться, лягте не позже {0} (5 циклов). Минимум, 4 цикла, не позже {1}.": ["To sleep enough, go to bed by {0} (5 cycles). Minimum, 4 cycles, by {1}.", "Pour bien dormir, couchez-vous avant {0} (5 cycles). Minimum, 4 cycles, avant {1}.", "Yeterli uyku için en geç {0}’da yatın (5 döngü). En az 4 döngü için {1}."],
+'Расписание и режим сна':['Schedule & sleep routine','Emploi du temps et sommeil','Ders programı ve uyku düzeni']
+};
+const P = [["Что сделать до отбоя", ["What to do before bed and what to try if you lie awake. General tips, not treatment.", "Que faire avant le coucher et si vous restez éveillé. Conseils généraux, pas un traitement.", "Yatmadan önce ve uyuyamazsanız neler yapılır. Genel öneriler, tedavi değil."]], ["Дыхание 4-7-8", ["4-7-8 breathing, 4 cycles", "Respiration 4-7-8, 4 cycles", "4-7-8 nefesi, 4 döngü"]], ["Расслабление мышц", ["Progressive muscle relaxation", "Relaxation musculaire progressive", "Kasları sırayla gevşetme"]], ["Слова на выбранную", ["Words for a chosen letter", "Mots sur une lettre choisie", "Seçilen harfle kelimeler"]], ["Если лежите больше", ["If you lie awake over 20 minutes", "Si vous restez éveillé plus de 20 minutes", "20 dakikadan uzun uyanık yatarsanız"]], ["Выгрузить мысли на бумагу", ["Write your thoughts down", "Noter ses pensées", "Düşünceleri kâğıda dökün"]], ["Когда нужен врач", ["When to see a doctor", "Quand consulter", "Ne zaman doktora gidilmeli"]], ["Сядьте или лягте", ["Sit or lie comfortably. Inhale through the nose for 4 s, hold 7, exhale slowly through the mouth for 8. If dizzy, breathe normally.", "Installez-vous confortablement. Inspirez par le nez 4 s, retenez 7, expirez lentement par la bouche 8. En cas de vertige, respirez normalement.", "Rahat oturun veya yatın. Burundan 4 sn nefes alın, 7 sn tutun, ağızdan 8 sn yavaşça verin. Başınız dönerse normal nefes alın."]], ["Нажмите «Начать»", ["Press “Start” and follow the circle.", "Appuyez sur « Démarrer » et suivez le cercle.", "“Başla”ya basın ve daireyi izleyin."]], ["Лягте на спину", ["Lie on your back. Clench your feet for 5 s, then release for 10–15.", "Allongé sur le dos, serrez les pieds 5 s, relâchez 10–15 s.", "Sırtüstü yatın. Ayakları 5 sn sıkın, 10–15 sn bırakın."]], ["Так же двигайтесь", ["Move up the same way: calves, thighs, stomach, hands, shoulders.", "Montez de la même façon : mollets, cuisses, ventre, mains, épaules.", "Aynı şekilde yukarı çıkın: baldır, uyluk, karın, eller, omuzlar."]], ["В конце напрягите", ["Finally tense and relax the face: brows, jaw, forehead.", "Enfin, contractez puis relâchez le visage : sourcils, mâchoire, front.", "Sonunda yüzü sıkıp gevşetin: kaşlar, çene, alın."]], ["Весь круг занимает", ["The full round takes 10–15 minutes. Breathe evenly between muscle groups.", "Le tour complet dure 10–15 min. Respirez calmement entre les groupes.", "Tüm tur 10–15 dk sürer. Kas grupları arasında düzenli nefes alın."]], ["Это способ отвлечь", ["This distracts your mind from thoughts. Pick a neutral word, e.g. “star”. For each letter think of words: for “s”: sun, sand, sofa. Picture each for a few seconds, then move on. Don’t link them into a story.", "Cela détourne l’esprit des pensées. Choisissez un mot neutre, p. ex. « étoile ». Pour chaque lettre, trouvez des mots : pour « é » : été, école, écume. Imaginez chacun quelques secondes. Ne faites pas d’histoire.", "Zihni düşüncelerden uzaklaştırır. Nötr bir kelime seçin, örn. “yıldız”. Her harf için kelime bulun: “y” için yol, yaz, yelken. Her birini birkaç sn düşünün. Hikâye kurmayın."]], ["Не смотрите на часы", ["Don’t watch the clock or force yourself to sleep.", "Ne regardez pas l’heure et ne forcez pas le sommeil.", "Saate bakmayın, kendinizi uyumaya zorlamayın."]], ["Встаньте, включите", ["Get up, use dim light, do something quiet without a screen: a book, stretching, warm water.", "Levez-vous, lumière tamisée, activité calme sans écran : livre, étirements, eau chaude.", "Kalkın, loş ışık açın, ekransız sakin bir şey yapın: kitap, esneme, ılık su."]], ["Возвращайтесь в кровать", ["Go back to bed when you feel sleepy.", "Retournez au lit quand le sommeil vient.", "Uykunuz gelince yatağa dönün."]], ["Кровать только для сна", ["Bed is for sleep only. Games and phone in bed teach the brain not to sleep there.", "Le lit sert qu’à dormir. Jeux et téléphone au lit apprennent au cerveau à ne pas dormir.", "Yatak yalnızca uyku içindir. Yatakta oyun ve telefon beyne orada uyumamayı öğretir."]], ["За час до отбоя", ["An hour before bed, spend 5 minutes writing down everything on your mind: tasks, questions, worries. On paper, it’s easier to let go.", "Une heure avant, notez 5 min tout ce qui vous préoccupe : tâches, questions, soucis. Sur papier, c’est plus facile à lâcher.", "Yatmadan 1 saat önce 5 dk aklınızdakileri yazın: işler, sorular, kaygılar. Kâğıttaysa bırakmak kolaydır."]], ["Если проблемы со сном", ["If sleep problems last over three weeks or hurt your studies, see a doctor. I don’t recommend pills or supplements without a prescription.", "Si les troubles durent plus de trois semaines ou nuisent aux études, consultez. Je déconseille médicaments et compléments sans ordonnance.", "Uyku sorunları üç haftadan uzun sürerse veya derslerinizi etkilerse doktora gidin. Reçetesiz hap ve takviye önermem."]], ["Свой подъём по дням", ["Custom wake-up by day: minutes before the first class (empty = common value). Works in “Custom” mode.", "Lever perso par jour : minutes avant le premier cours (vide = valeur commune). Mode « Perso ».", "Güne özel kalkış: ilk dersten kaç dk önce (boş = ortak değer). “Özel” modda çalışır."]], ["Не учитывать пары ОИЗ", ["Ignore ОИЗ classes without dates. Check them with the group leader.", "Ignorer les cours ОИЗ sans dates. À vérifier auprès du délégué.", "Tarihsiz ОИЗ derslerini sayma. Grup başkanından teyit edin."]], ["Android, Chrome", ["Android, Chrome: menu, then “Add to Home screen”. iPhone, Safari: Share, then “Add to Home Screen”.", "Android, Chrome : menu, « Ajouter à l’écran d’accueil ». iPhone, Safari : Partager, « Sur l’écran d’accueil ».", "Android, Chrome: menü, “Ana ekrana ekle”. iPhone, Safari: Paylaş, “Ana Ekrana Ekle”."]], ["Подгруппа, режим, палитра", ["Subgroup, mode, palette and “absent” marks are saved in browser storage and duplicated in a cookie for a year. Clearing site data or switching browsers resets everything.", "Sous-groupe, mode, palette et absences sont gardés dans le navigateur et copiés dans un cookie un an. Effacer les données ou changer de navigateur réinitialise tout.", "Alt grup, mod, palet ve “yokum” işaretleri tarayıcıda saklanır, bir yıllık çerezde kopyalanır. Site verisini silmek veya tarayıcı değiştirmek her şeyi sıfırlar."]], ["Расписание действует", ["Schedule valid 1 Sep–28 Dec. September ОИЗ classes with dates have passed and are hidden. Week 1 began on 31 Aug and alternates with week 2. Subgroups per the group leader: computer science for subgroup 1 on Tuesdays and Thursday of week 2, for subgroup 2 on Fridays and Thursday of week 1. The Thursday chemistry lab is for the whole group (no subgroups); which weeks it runs is unconfirmed, so it is marked “assumption”. If “Both” is chosen, wake-up and bedtime follow the earliest class of either subgroup.", "Emploi du temps valable du 1.09 au 28.12. Les cours ОИЗ de septembre avec dates sont passés et masqués. La semaine 1 a commencé le 31 août et alterne avec la 2. Sous-groupes selon le délégué : informatique pour le 1 le mardi et le jeudi de la semaine 2, pour le 2 le vendredi et le jeudi de la semaine 1. Le TP de chimie du jeudi concerne tout le groupe (sans sous-groupes) ; les semaines ne sont pas confirmées, d’où la mention « hypothèse ». Avec « Les deux », lever et coucher suivent le cours le plus tôt.", "Program 1.09–28.12 arası geçerli. Eylül’deki tarihli ОИЗ dersleri geçti ve gizlendi. 1. hafta 31 Ağustos’ta başladı, 2. haftayla dönüşümlü. Grup başkanına göre: bilişim 1. alt grupta salı ve 2. hafta perşembe, 2. alt grupta cuma ve 1. hafta perşembe. Perşembe kimya laboratuvarı tüm grup içindir (alt grup yok); hangi haftalarda olduğu doğrulanmadı, bu yüzden “tahmin” olarak işaretli. “İkisi” seçiliyse kalkış ve yatış en erken derse göre hesaplanır."]]];
+const pf = o => { const e = P.find(x => o.startsWith(x[0])), i = LI[LG]; return e && i !== undefined ? e[1][i] : o; };
+const t = k => { const a = T[k], i = LI[LG]; return (a && i !== undefined) ? a[i] : k; };
+const tf = (k, ...a) => t(k).replace(/\{(\d)\}/g, (_, i) => a[i]);
+const sn = n => n.startsWith('ОИЗ. ') ? 'ОИЗ. ' + t(n.slice(5)) : t(n);
+const rm = r => LG === 'ru' ? r : r.replace(/мастерские/, t('мастерские')).replace(/ауд\./, t('ауд.')).replace(/лаб\./, t('лаб.')).replace(/(^|\s)к\./, '$1' + t('к.'));
+const DICT = [
+['пара','class period (90 min)','cours (créneau de 90 min)','ders (90 dk)'],
+['лекция','lecture','cours magistral','ders (teorik)'],
+['практика','seminar / tutorial','travaux dirigés (TD)','uygulama dersi'],
+['лабораторная','lab session','travaux pratiques (TP)','laboratuvar dersi'],
+['подгруппа','subgroup','sous-groupe','alt grup'],
+['староста','group leader (class monitor)','délégué de groupe','grup başkanı'],
+['куратор','group curator (tutor)','tuteur de groupe','grup danışmanı'],
+['преподаватель','instructor','enseignant','öğretim görevlisi'],
+['деканат','dean’s office','bureau du doyen','dekanlık'],
+['кафедра','department','département','kürsü / bölüm'],
+['зачёт','pass/fail credit (no grade)','validation (sans note)','geçti-kaldı sınavı (zaçyot)'],
+['экзамен','exam','examen','sınav'],
+['сессия','exam period','session d’examens','sınav dönemi'],
+['пересдача','retake','rattrapage','tekrar sınav'],
+['задолженность','academic debt (failed subject)','dette académique (matière non validée)','akademik borç'],
+['семестр','semester','semestre','yarıyıl'],
+['стипендия','stipend','bourse','burs'],
+['справка','certificate / official note','attestation','belge'],
+['зачётная книжка','grade book','carnet de notes','not defteri'],
+['студенческий билет','student ID','carte d’étudiant','öğrenci kimliği'],
+['общежитие','dormitory','résidence universitaire','yurt'],
+['аудитория (ауд.)','classroom','salle','derslik'],
+['корпус (к.)','building','bâtiment','bina'],
+['мастерские','workshops','ateliers','atölyeler'],
+['окно','gap between classes','créneau libre','boş ders'],
+['физкультура','PE','EPS','beden eğitimi'],
+['расписание','schedule','emploi du temps','ders programı'],
+['чередование недель (1 нед. / 2 нед.)','alternating weeks','semaines alternées','dönüşümlü haftalar'],
+['отбой','bedtime','heure du coucher','yatma saati'],
+['подъём','wake-up','lever','kalkış']
+];
+const walked = new WeakMap();
+function stat() {
+  document.querySelectorAll('.eyebrow,#sp-tips,#sp-set,#sp-week h2,#dict h2,#setdlg .dh h2,footer').forEach(root => {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+    while ((n = w.nextNode())) { const k = n.nodeValue.trim(); if (!k) continue; const o = walked.get(n) || k; walked.set(n, o); if (T[o]) n.nodeValue = t(o); else if (P.some(x => o.startsWith(x[0]))) n.nodeValue = pf(o); }
+  });
+}
+function renderDict() {
+  const q = $('dq').value.trim().toLowerCase(), i = LI[LG];
+  $('dl').innerHTML = DICT.filter(r => !q || r.join('|').toLowerCase().includes(q)).map(r =>
+    '<div class="de"><b>' + ic('book') + r[0] + '</b><div>' + (i === undefined ? r.slice(1).join(' · ') : r[i + 1]) + '</div></div>').join('');
+}
+function relabel() {
+  document.documentElement.lang = LG; 
+  $('mt-sched').innerHTML = ic('calendar') + t('Расписание'); $('mt-sleep').innerHTML = ic('moon') + t('Сон'); document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('#subnav [data-sub] span').forEach((e, i) => { e.textContent = t(SUBS[i][2]); });
+  $('dict-btn').setAttribute('aria-label', t('Словарь')); $('set-btn').setAttribute('aria-label', t('Настройки')); $('dq').placeholder = t('Поиск');
+  document.querySelectorAll('#daygrid label').forEach((l, i) => { l.firstChild.nodeValue = t(DAYS[i]).toUpperCase().slice(0, 1) + t(DAYS[i]).slice(1); const inp = l.querySelector('input'); if (inp) inp.placeholder = t('общее'); });
+  stat(); renderDict(); renderLang(); ibText();
+}
+let lastHapticAt = 0;
+function haptic(ms = 12) {
+  try {
+    if (!('vibrate' in navigator)) return;
+    const now = Date.now();
+    if (now - lastHapticAt < 65) return;
+    lastHapticAt = now;
+    navigator.vibrate(Math.max(7, Math.min(18, ms)));
+  } catch (e) {}
+}
+// Consistent subtle feedback for interactive controls throughout the app.
+// Existing action-specific haptics are rate-limited by haptic() to avoid double pulses.
+document.addEventListener('click', ev => {
+  const control = ev.target.closest('button, input[type="checkbox"], input[type="radio"], [role="switch"]');
+  if (!control || control.disabled || control.getAttribute('aria-disabled') === 'true') return;
+  if (control.matches('input[type="checkbox"], input[type="radio"]')) haptic(8);
+  else haptic(8);
+}, true);
+const save = () => {
+  try { localStorage.setItem('rasp-settings', JSON.stringify(S)); localStorage.setItem('rasp-skipped', JSON.stringify(skipped)); } catch (e) {}
+  cookieSet({ S, skipped });
+};
+
+const counted = e => !(e.unsure && S.unsure);
+function classes(d) {
+  const n = dow(d), w = weekNo(d);
+  if (n > 6 || HOLIDAYS[iso(d)] || skipped[iso(d)]) return [];
+  return L.filter(e => e.d === n && (e.w === 0 || e.w === w) && (!e.sub || !S.sub || e.sub === S.sub)).sort((a, b) => a.s - b.s);
+}
+// Подъём зависит от первой пары дня.
+// Впритык: за S.prep минут до пары. Пораньше: за 3 часа до пары, но между 9:00 и 10:00, и не позже чем за 1,5 часа до пары.
+function leadFor(n) {
+  const v = S.leadDay && S.leadDay[n];
+  return (v !== undefined && v !== null && v !== '' && isFinite(v)) ? Number(v) : S.lead;
+}
+function wakeFor(first, mode, n) {
+  const f = mins(first);
+  if (mode === 'late') return f - S.prep;
+  if (mode === 'custom') return f - leadFor(n);
+  return Math.min(Math.max(540, Math.min(600, f - 180)), f - 90);
+}
+function plan(d, mode) {
+  mode = mode || S.mode;
+  const cs = classes(d).filter(counted);
+  let wake = mins(S.wake), first = null, last = null;
+  if (cs.length) {
+    first = SLOTS[cs[0].s][0];
+    last = SLOTS[cs[cs.length - 1].s][1];
+    wake = wakeFor(first, mode, dow(d));
+  }
+  const bed = wake - S.sleep * 60 - S.fall;
+  return { cs, first, last, wake, bed };
+}
+function keepFocus(fn) {
+  const a = document.activeElement, id = a && a.id;
+  fn();
+  if (id) { const e = document.getElementById(id); if (e) e.focus(); }
+}
+const at = (d, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, Math.round(m));
+
+let weekOffset = 0;
+let animNext = true;
+let sel = new Date();
+sel = dow(sel) > 6 ? addDays(sel, 1) : sel;
+let ctx = null; // ближайший подъём: { d, p, wakeAt, now }
+
+function findTarget() {
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let d = today, p = plan(d);
+  for (let i = 0; i < 9; i++) {
+    d = addDays(today, i); p = plan(d);
+    if (at(d, Math.max(plan(d, 'early').wake, plan(d, 'late').wake, plan(d, 'custom').wake)) > now) break;
+  }
+  ctx = { d, p, wakeAt: at(d, p.wake), now };
+}
+
+function renderHero() {
+  findTarget();
+  const { d, p, wakeAt, now } = ctx;
+  const bedAt = at(d, p.bed);
+  let note;
+  if (now >= wakeAt) note = tf('Подъём по плану был в {0}.', hm(p.wake));
+  else if (now >= bedAt && now < wakeAt) note = tf('Отбой был в {0}. Сейчас пора спать, подъём через {1}.', hm(p.bed), dur((wakeAt - now) / 6e4));
+  else note = tf('До отбоя {0}.', dur((bedAt - now) / 6e4));
+  const why = p.cs.length
+    ? tf('Первая пара {0}, подъём {1}', p.first, S.mode === 'late' ? tf('впритык, за {0} мин до неё.', S.prep) : S.mode === 'custom' ? tf('за {0} мин до неё.', leadFor(dow(d))) : t('пораньше, с запасом.'))
+    : tf('В этот день пар нет, подъём {0}.', hm(p.wake));
+  const sleepHours = String(S.sleep).replace('.', ',');
+  const durationMins = Math.max(0, S.sleep * 60);
+  const arcStops = Array.from({length: 13}, (_,i) => { const a=(-180+i*15)*Math.PI/180, r=74, x=100+Math.cos(a)*r, y=96+Math.sin(a)*r; return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1); }).join(' ');
+  $('hero').innerHTML =
+    '<div class="sleep-art" aria-hidden="true"><div class="sleep-art-copy"><span class="sleep-kicker">' + ic('sparkles') + t('ТВОЙ РИТМ СНА') + '</span><div class="sleep-art-title">Время<br>перезагрузки</div><div class="sleep-art-date">' + wdayName(d) + ', ' + d.toLocaleDateString(LOC(), { day: 'numeric', month: 'long' }) + '</div></div>' +
+    '<svg class="sleep-illustration" viewBox="0 0 200 150" role="img" aria-label="Ночное небо с луной и звёздами"><defs><linearGradient id="nightGlow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--night)" stop-opacity=".42"/><stop offset="1" stop-color="var(--dawn)" stop-opacity=".10"/></linearGradient><linearGradient id="moonFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4ce"/><stop offset="1" stop-color="#c7c9ff"/></linearGradient></defs><circle cx="130" cy="68" r="61" fill="url(#nightGlow)"/><path d="' + arcStops + '" fill="none" stroke="rgba(255,255,255,.24)" stroke-width="1.5" stroke-linecap="round"/><path d="M132 26a25 25 0 1 0 24 37A22 22 0 0 1 132 26Z" fill="url(#moonFill)"/><g fill="#fff"><circle cx="92" cy="29" r="1.8"/><circle cx="168" cy="44" r="1.5"/><circle cx="153" cy="93" r="1.6"/><circle cx="111" cy="77" r="1.2"/><circle cx="178" cy="70" r="1"/></g><path d="M18 127c18-20 34-20 50-4 15-25 39-26 55-6 16-13 36-10 59 10v23H18Z" fill="var(--night)" opacity=".5"/><path d="M18 139c20-13 39-11 57 2 18-13 38-12 55 0 18-11 35-10 52 1v8H18Z" fill="var(--night)" opacity=".8"/></svg></div>' +
+    '<div class="sleep-plan-label"><span>' + ic('alarm') + t('Ближайший подъём') + '</span><span class="sleep-live-dot"></span></div>' +
+    '<div class="sleep-time-grid"><div class="sleep-time sleep-time-bed"><div class="sleep-time-label">' + ic('moon') + t('Отбой') + '</div><strong>' + hm(p.bed) + '</strong><span>' + t('сон') + ' · ' + sleepHours + ' ' + t('ч') + '</span></div><div class="sleep-time sleep-time-wake"><div class="sleep-time-label">' + ic('sun') + t('Подъём') + '</div><strong>' + hm(p.wake) + '</strong><span>' + (p.cs.length ? t('пары с') + ' ' + p.first : t('пар нет')) + '</span></div></div>' +
+    '<div class="sleep-duration"><div class="sleep-duration-top"><span>' + ic('clock') + ' ' + t('Время на сон') + '</span><b>' + sleepHours + ' ' + t('ч') + '</b></div><div class="sleep-track"><span style="width:' + Math.max(18,Math.min(100,durationMins/720*100)) + '%"></span></div><div class="sleep-duration-bottom"><span>' + t('Отбой') + ' ' + hm(p.bed) + '</span><span>' + t('Подъём') + ' ' + hm(p.wake) + '</span></div></div>' +
+    '<p class="hero-note">' + note + ' ' + why + '</p>';
+}
+
+const CYC = [[6, 'С запасом'], [5, 'Идеал'], [4, 'Минимум'], [3, 'Аварийный']];
+function calcHtml() {
+  const { d, p } = ctx, mode = S.calc === 'wake' ? 'wake' : 'bed', tv = (mode === 'bed' ? S.calcBed : S.calcWake) || (mode === 'bed' ? '23:30' : '08:00'), [hh, mm] = tv.split(':').map(Number), base = hh * 60 + mm;
+  const latest = p.cs.length ? plan(d, 'late').wake : null;
+  let h = '<h2>' + ic('clock') + t('Калькулятор сна') + '</h2><p class="hint">' + t('Введите время, а приложение посчитает остальное по циклам по 90 минут и с учётом времени засыпания.') + '</p>' +
+    '<div class="seg" style="grid-template-columns:repeat(2,1fr)">' + [['bed', 'moon', 'Лягу в'], ['wake', 'sun', 'Встану в']].map(m => '<button class="btn" type="button" data-calc="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + ic(m[1]) + t(m[2]) + '</button>').join('') + '</div>' +
+    '<div class="night-row" style="margin:10px 0"><label for="calc-t">' + t(mode === 'bed' ? 'Лягу в' : 'Встану в') + '</label><input id="calc-t" type="time" value="' + tv + '"></div><div class="vars">';
+  CYC.forEach(c => {
+    const n = c[0], x = mode === 'bed' ? base + S.fall + n * 90 : base - S.fall - n * 90, wd = ((x % 1440) + 1440) % 1440;
+    const late = mode === 'bed' && latest != null && wd > latest && wd < latest + 360;
+    h += '<div class="var static' + (n <= 4 ? ' weak' : '') + '"><span><span class="vt">' + ic(n <= 4 ? 'clock' : 'moon') + t(c[1]) + '</span><br><span class="vs">' + n + ' ' + cyc(n) + ', ' + dur(n * 90) + '</span>' + (late ? '<br><span class="chip warn">' + t('позже, чем нужно к первой паре') + '</span>' : '') + '</span><span class="vb">' + hm(x) + '</span></div>';
+  });
+  return h + '</div>';
+}
+function renderVariants() {
+  const { d, p } = ctx;
+  const earlyP = plan(d, 'early'), lateP = plan(d, 'late'), customP = plan(d, 'custom');
+  let h = '<h2>' + ic('sparkles') + t('Когда ложиться') + '</h2>' +
+    '<p class="hint">' + t('Время зависит от дня: считается от первой пары') + (p.cs.length ? ' (' + wdayName(d) + ', ' + p.first + ')' : ', ' + wdayName(d) + ': ' + t('пар нет')) + '. ' + t('Сон идёт циклами примерно по 90 минут, проснуться в конце цикла легче.') + '</p>';
+  h += '<div class="seg"><button class="btn" type="button" data-mode="early" aria-pressed="' + (S.mode === 'early') + '">' + ic('sunrise') + t('Пораньше') + '<small>' + t('подъём') + ' ' + hm(earlyP.wake) + '</small></button>' +
+       '<button class="btn" type="button" data-mode="late" aria-pressed="' + (S.mode === 'late') + '">' + ic('bolt') + t('Впритык') + '<small>' + hm(lateP.wake) + (lateP.cs.length ? ', ' + tf('за {0} мин', S.prep) : ', ' + t('пар нет')) + '</small></button>' +
+       '<button class="btn" type="button" data-mode="custom" aria-pressed="' + (S.mode === 'custom') + '">' + ic('sliders') + t('Своё') + '<small>' + hm(customP.wake) + (customP.cs.length ? ', ' + tf('за {0} мин', leadFor(dow(d))) : ', ' + t('пар нет')) + '</small></button></div>';
+  const bn = ((p.bed % 1440) + 1440) % 1440;
+  h += '<div class="vars variant-choices">';
+  const known = CYC.some(c => c[0] * 1.5 === S.sleep);
+  const row = (hours, title, sub, weak) => {
+    const bed = p.wake - hours * 60 - S.fall;
+    return '<button class="var' + (weak ? ' weak' : '') + '" type="button" data-sleep="' + hours + '" aria-pressed="' + (hours === S.sleep) + '"><span><span class="vt">' + ic(weak ? 'clock' : 'moon') + title + '</span><br><span class="vs">' + sub + '</span></span><span class="vb">' + hm(bed) + '</span></button>';
+  };
+  if (!known) h += row(S.sleep, t('Ваше значение'), String(S.sleep).replace('.', ',') + ' ' + t('ч сна'), false);
+  CYC.forEach(c => { const hrs = c[0] * 1.5; h += row(hrs, t(c[1]), c[0] + ' ' + cyc(c[0]) + ', ' + dur(hrs * 60), c[0] <= 4); });
+  h += '</div><p class="note">' + tf('Нажмите на вариант, и он станет основным в плане и в карточке выше. Отбой учитывает, что вы засыпаете за {0} мин.', S.fall) + '</p>';
+  if (S.mode === 'custom') {
+    h += '<div class="mini"><span class="lbl">' + t('Вставать за') + '</span><input id="lead-in" class="leadin" type="number" min="0" max="600" step="5" value="' + S.lead + '"><span class="lbl">' + t('мин до пары') + '</span></div>' +
+      '<div class="mini">' + [30, 45, 60, 90, 120, 180].map(v => '<button class="btn" type="button" data-lead="' + v + '" aria-pressed="' + (S.lead === v) + '">' + v + '</button>').join('') + '</div>';
+    if (Object.keys(S.leadDay).some(k => S.leadDay[k] !== '' && S.leadDay[k] != null)) h += '<p class="note">' + t('Для некоторых дней недели заданы свои значения в настройках режима.') + '</p>';
+  }
+  if (S.mode !== 'early' && bn >= 120 && bn <= 420) h += '<p class="note">' + tf('Отбой в {0} сдвигает весь режим на утро. Если так в несколько дней подряд, лучше вариант «Пораньше».', hm(p.bed)) + '</p>';
+  h += '<div class="mini">' + ic('bed') + '<span class="lbl">' + t('Засыпаю за') + '</span>' + [10, 15, 30, 45, 60].map(v => '<button class="btn" type="button" data-fall="' + v + '" aria-pressed="' + (S.fall === v) + '">' + v + '</button>').join('') + '<span class="lbl">' + t('мин') + '</span></div>';
+  const box = $('sp-var');
+  box.innerHTML = h;
+  box.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); haptic(10); render(); }));
+  box.querySelectorAll('[data-lead]').forEach(b => b.addEventListener('click', () => { S.lead = Number(b.dataset.lead); save(); render(); }));
+  const li = $('lead-in');
+  if (li) li.addEventListener('input', ev => { if (ev.target.value === '') return; S.lead = Math.max(0, Math.min(600, Number(ev.target.value))); save(); keepFocus(render); });
+  box.querySelectorAll('[data-fall]').forEach(b => b.addEventListener('click', () => { S.fall = Number(b.dataset.fall); save(); fillForm(); render(); }));
+  box.querySelectorAll('[data-sleep]').forEach(b => b.addEventListener('click', () => { S.sleep = Number(b.dataset.sleep); save(); fillForm(); render(); }));
+}
+
+function renderCalc() {
+  const box = $('sp-calc');
+  box.innerHTML = calcHtml();
+  box.querySelectorAll('[data-calc]').forEach(b => b.addEventListener('click', () => { S.calc = b.dataset.calc; save(); renderCalc(); }));
+  const ct = $('calc-t');
+  if (ct) ct.addEventListener('input', ev => { if (ev.target.value) { S[S.calc === 'wake' ? 'calcWake' : 'calcBed'] = ev.target.value; save(); keepFocus(renderCalc); } });
+}
+
+function renderCues() {
+  const { d, p } = ctx;
+  const bedAt = at(d, p.bed);
+  const cue = (icon, k, v) => '<div class="cue"><div class="k">' + ic(icon) + '<span>' + k + '</span></div><div class="v">' + v + '</div></div>';
+  $('cues').innerHTML =
+    cue('coffee', t('Последний кофе или энергетик до'), hmDate(new Date(bedAt.getTime() - 8 * 36e5))) +
+    cue('phone', t('Выключить яркие экраны с'), hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('pencil', t('Выгрузить мысли на бумагу в'), hmDate(new Date(bedAt.getTime() - 60 * 6e4))) +
+    cue('bed', t('Лечь в кровать в'), hm(p.bed));
+}
+
+function renderPlan() {
+  const today = new Date();
+  const mon = addDays(mondayOf(today), weekOffset * 7);
+  const modeName = S.mode === 'late' ? t('Впритык') : S.mode === 'custom' ? t('Своё') : t('Пораньше');
+  $('week-hint').textContent = tf('Режим: {0}, неделя {1}. Меняется на вкладке «Расписание».', modeName, weekNo(mon));
+  let rows = '<tr><th>' + ic('calendar') + t('День') + '</th><th>' + ic('book') + t('Пары') + '</th><th>' + ic('sun') + t('Подъём') + '</th><th>' + ic('moon') + t('Отбой') + '</th></tr>';
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i), p = plan(d), k = iso(d);
+    const cur = k === iso(sel) ? ' class="cur"' : '';
+    const pairs = p.cs.length ? p.first + '–' + p.last : (HOLIDAYS[k] ? t('праздник') : skipped[k] ? t('вас нет') : t('нет пар'));
+    rows += '<tr' + cur + '><td>' + t(DAYS[i]) + ', ' + d.getDate() + '</td><td class="m">' + pairs + '</td><td class="m">' + hm(p.wake) + '</td><td class="m">' + hm(p.bed) + '</td></tr>';
+  }
+  $('plan').innerHTML = rows;
+}
+
+function renderSub() {
+  $('subsel').innerHTML = '<span class="sublbl">' + ic('user') + t('Подгруппа') + '</span>' +
+    [[0, t('Обе')], [1, '1'], [2, '2']].map(o => '<button type="button" data-subpick="' + o[0] + '" aria-pressed="' + (S.sub === o[0]) + '">' + o[1] + '</button>').join('');
+  $('subsel').querySelectorAll('[data-subpick]').forEach(b => b.addEventListener('click', () => { animNext = true; S.sub = Number(b.dataset.subpick); save(); haptic(10); render(); }));
+}
+function renderSched() {
+  renderSub();
+  const today = new Date();
+  const mon = addDays(mondayOf(today), weekOffset * 7);
+  const sw = $('weekswitch');
+  sw.innerHTML = '';
+  [0, 1].forEach(o => {
+    const m = addDays(mondayOf(today), o * 7);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', o === weekOffset ? 'true' : 'false');
+    b.innerHTML = ic('calendar') + (o ? t('Следующая') : t('Эта неделя')) + ' · ' + weekNo(m) + ' ' + t('нед.');
+    b.addEventListener('click', () => { animNext = true; weekOffset = o; sel = addDays(mondayOf(today), o * 7 + Math.min(dow(sel), 6) - 1); if (!o && dow(today) <= 6) sel = today; render(); });
+    sw.appendChild(b);
+  });
+  const tabs = $('tabs');
+  tabs.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab' + (iso(d) === iso(today) ? ' today' : '') + (classes(d).length ? '' : ' off');
+    b.setAttribute('aria-pressed', iso(d) === iso(sel) ? 'true' : 'false');
+    b.innerHTML = '<span class="d">' + t(DAYS[i]) + '</span><span class="n">' + d.getDate() + '</span>';
+    b.addEventListener('click', () => { animNext = true; sel = d; render(); });
+    tabs.appendChild(b);
+  }
+  renderDay();
+}
+
+function renderDay() {
+  const now = new Date(), k = iso(sel), isToday = k === iso(now);
+  const nowM = now.getHours() * 60 + now.getMinutes();
+  const cs = classes(sel);
+  const groups = [];
+  cs.forEach(e => {
+    let g = groups.find(x => x.s === e.s);
+    if (!g) { g = { s: e.s, items: [] }; groups.push(g); }
+    g.items.push(e);
+  });
+  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><p class="quip">' + t(QUIPS[dow(sel) - 1] || QUIPS[0]) + '</p><div class="sumrow">' +
+    '<span class="pill">' + ic('calendar') + weekNo(sel) + ' ' + t('неделя') + '</span>';
+  if (groups.length) {
+    h += '<span class="pill">' + ic('list') + groups.length + ' ' + pairWord(groups.length) + '</span>' +
+      '<span class="pill">' + ic('clock') + SLOTS[groups[0].s][0] + '–' + SLOTS[groups[groups.length - 1].s][1] + '</span>';
+    if (isToday) {
+      const nx = groups.find(g => mins(SLOTS[g.s][0]) > nowM);
+      if (nx) h += '<span class="pill hl">' + ic('alarm') + t('дальше в') + ' ' + SLOTS[nx.s][0] + ', ' + t('через') + ' ' + dur(mins(SLOTS[nx.s][0]) - nowM) + '</span>';
+    }
+  }
+  h += '</div></div>';
+  if (HOLIDAYS[k]) h += '<div class="empty">' + ic('sun') + '<span>' + t('Праздничный день') + ': ' + t(HOLIDAYS[k]) + '. ' + t('Пар нет.') + '</span></div>';
+  else if (skipped[k]) h += '<div class="empty">' + ic('off') + '<span>' + t('Вы отметили, что в этот день вас нет на парах.') + '</span></div>';
+  else if (!cs.length) h += '<div class="empty">' + ic('sun') + '<span>' + t('В этот день пар нет.') + '</span></div>';
+  const item = e => {
+    const meta = (e.r ? '<span>' + ic('pin') + rm(e.r) + '</span>' : '') + (e.p ? '<span>' + ic('user') + t(e.p) + '</span>' : '');
+    let chips = '<span class="chip tchip" data-t="' + e.t + '">' + t(TYPE[e.t]) + '</span>';
+    if (e.unsure) chips += '<span class="chip warn">' + t('без дат, уточнить') + '</span>';
+    if (e.guess) chips += '<span class="chip warn">' + t('предположение, уточнить') + '</span>';
+    const joke = e.t === 'лек' ? '<div class="joke">' + ic('gamepad') + t('Примечание: это пара игры в Клеш Рояль') + '</div>' : '';
+    return '<div class="subj"><span class="tbadge" data-t="' + e.t + '">' + ic(TICON[e.t]) + '</span><span>' + sn(e.n) + '</span></div>' +
+      (meta ? '<div class="meta">' + meta + '</div>' : '') + joke + '<div class="chips">' + chips + '</div>';
+  };
+  let prevEnd = null;
+  groups.forEach(g => {
+    const [a, b] = SLOTS[g.s];
+    const breakMinutes = prevEnd === null ? 0 : mins(a) - prevEnd;
+    const afterLongBreak = prevEnd !== null && breakMinutes >= 25;
+    if (prevEnd !== null && breakMinutes > 45) h += '<p class="gap">' + ic('clock') + t('окно') + ' ' + dur(breakMinutes) + '</p>';
+    prevEnd = mins(b);
+    const live = isToday && nowM >= mins(a) && nowM < mins(b);
+    const past = isToday && nowM >= mins(b);
+    const dim = g.items.every(e => !counted(e));
+    // Departure badges: in “Both” mode calculate a separate first routed class for each subgroup.
+    const badgeFor = (e, label) => {
+      if (!e) return '';
+      const bld = buildingFor(e);
+      if (!bld || !COMMUTE_ROUTES[bld] || Number(e.s) !== Number(g.s)) return '';
+      const walk = Math.ceil(COMMUTE_ROUTES[bld] / (4000 / 60));
+      const leave = mins(SLOTS[e.s][0]) - 5 - walk;
+      return '<span class="leave-badge"><span>' + label + '</span><b>' + fmtClock(leave) + '</b><small>к корпусу ' + bld + ' · пешком</small></span>';
+    };
+    const routeForSub = n => cs.find(e => (!e.sub || e.sub === n) && (() => { const b = buildingFor(e); return b && COMMUTE_ROUTES[b]; })());
+    const bothSubs = S.sub === 0;
+    const firstRouteClass = bothSubs ? null : cs.find(e => { const bld = buildingFor(e); return bld && COMMUTE_ROUTES[bld] && (!e.sub || !S.sub || e.sub === S.sub); });
+    const leaveBadge = !bothSubs && firstRouteClass ? badgeFor(firstRouteClass, 'Выйти из общежития') : '';
+    // After a break of 25+ minutes, show a fresh departure time for the next class too.
+    const breakRouteForSub = n => g.items.find(e => (!e.sub || e.sub === n) && (() => { const bld = buildingFor(e); return bld && COMMUTE_ROUTES[bld]; })());
+    let breakBadges = '';
+    if (afterLongBreak) {
+      if (bothSubs) {
+        const br1 = breakRouteForSub(1), br2 = breakRouteForSub(2);
+        const sameBreakClass = br1 && br2 && !br1.sub && !br2.sub && br1.d === br2.d && br1.s === br2.s && buildingFor(br1) === buildingFor(br2) && br1.n === br2.n;
+        if (sameBreakClass) {
+          if (routeForSub(1) !== br1 && routeForSub(2) !== br2) breakBadges += badgeFor(br1, 'Общий выход после перемены');
+        } else {
+          if (br1 && routeForSub(1) !== br1) breakBadges += badgeFor(br1, 'Выход после перемены · подгруппа 1');
+          if (br2 && routeForSub(2) !== br2 && (!br1 || br2 !== br1)) breakBadges += badgeFor(br2, 'Выход после перемены · подгруппа 2');
+        }
+      } else {
+        const br = breakRouteForSub(S.sub || 1);
+        if (br && br !== firstRouteClass) breakBadges = badgeFor(br, 'Выйти после перемены');
+      }
+    }
+    let inner = breakBadges;
+    if (g.items.some(e => e.sub)) {
+      (S.sub ? [S.sub] : [1, 2]).forEach(n => {
+        const it = g.items.find(e => e.sub === n);
+        const route = bothSubs ? routeForSub(n) : null;
+        const subBadge = route && route.sub === n ? badgeFor(route, 'Выход · подгруппа ' + n) : '';
+        inner += '<div class="subrow"><span class="sublab">' + t('Подгруппа') + ' ' + n + '</span>' + subBadge + (it ? item(it) : '<div class="nopair">' + t('пары нет') + '</div>') + '</div>';
+      });
+    }
+    const sharedItems = g.items.filter(e => !e.sub);
+    inner += sharedItems.map(e => {
+      if (!bothSubs) return item(e);
+      const r1 = routeForSub(1), r2 = routeForSub(2);
+      let badges = '';
+      const sameSharedClass = r1 && r2 && !r1.sub && !r2.sub && r1.d === r2.d && r1.s === r2.s && buildingFor(r1) === buildingFor(r2) && r1.n === r2.n;
+      if (sameSharedClass) badges += badgeFor(r1, 'Общий выход из общежития');
+      else {
+        if (r1 && !r1.sub) badges += badgeFor(r1, 'Выход · подгруппа 1');
+        if (r2 && !r2.sub && r2 !== r1) badges += badgeFor(r2, 'Выход · подгруппа 2');
+      }
+      return badges + item(e);
+    }).join('');
+    h += '<div class="card' + (live ? ' now' : '') + (past ? ' past' : '') + (dim ? ' dim' : '') + '"><div class="time"><span>' + a + '</span><span>' + b + '</span>' + (live ? '<span class="flag">' + t('идёт сейчас') + '</span>' : '') + '</div><div class="body">' + leaveBadge + inner + '</div></div>';
+  });
+  if (!HOLIDAYS[k]) h += '<button class="skipbtn" id="skipbtn" type="button">' + (skipped[k] ? ic('undo') + t('Вернуть пары на этот день') : ic('off') + t('Меня нет на парах в этот день')) + '</button>';
+  $('day').innerHTML = h;
+  $('day').classList.toggle('anim', animNext); animNext = false;
+  const sb = $('skipbtn');
+  if (sb) sb.addEventListener('click', () => { const r = sb.getBoundingClientRect(), fun = !skipped[k]; if (skipped[k]) delete skipped[k]; else skipped[k] = 1; save(); render(); haptic(12); if (fun) { burst(r.left + r.width / 2, r.top, ['★', '☾', '✦', '✿']); toast(t('Свободен! Отдыхай.')); } });
+}
+
+
+const COMMUTE_ROUTES = {6:300, 7:150, 8:500, 11:250, 17:250, 18:500};
+function fmtClock(total) { total = ((total % 1440) + 1440) % 1440; return String(Math.floor(total/60)).padStart(2,'0') + ':' + String(total%60).padStart(2,'0'); }
+function buildingFor(e) { const room = String(e.r || ''); const m = room.match(/(?:^|[^\p{L}\d])(?:к\.?|корп(?:ус)?\.?)\s*(6|7|8|11|17|18)(?!\d)/iu) || room.match(/(?:^|\s)(6|7|8|11|17|18)\s*(?:корпус|корп\.?)/iu); return m ? Number(m[1]) : null; }
+function renderCommute() {
+  const select = $('commute-class'); if (!select) return;
+  const list = classes(sel).map(e => ({e, b:buildingFor(e)})).filter(x => x.b && COMMUTE_ROUTES[x.b]);
+  const dayName = fmtDay(sel);
+  $('commute-dayhint').textContent = dayName + ' · ' + t('Выбери день, на который смотришь расписание.');
+  if (!list.length) {
+    select.innerHTML = '<option value="">' + t('Нет пары с корпусом, для которого проверен маршрут.') + '</option>';
+    $('commute-result').innerHTML = '<div class="commute-empty">' + ic('calendar') + '<p>' + t('На выбранный день нет пар с проверенным пешим маршрутом.') + '</p></div>';
+    return;
+  }
+  const now = new Date(), today = iso(sel) === iso(now), nowM = now.getHours()*60+now.getMinutes();
+  let defaultIndex = list.findIndex(x => !today || mins(SLOTS[x.e.s][0]) > nowM);
+  if (defaultIndex < 0) defaultIndex = 0;
+  select.innerHTML = list.map((x,i) => '<option value="'+i+'">'+SLOTS[x.e.s][0]+' · '+escapeHtml(x.e.n)+' · '+t('корпус (к.)')+' '+x.b+'</option>').join('');
+  // Preserve an existing selection when a schedule redraw does not change the selected day.
+  const old = select.dataset.choice;
+  const sameDay = select.dataset.day === iso(sel);
+  const index = sameDay && old !== undefined && Number(old) < list.length ? Number(old) : defaultIndex;
+  select.value = String(index); select.dataset.choice = String(index); select.dataset.day = iso(sel);
+  const update = () => {
+    const i = Math.max(0, Math.min(list.length-1, Number(select.value)||0)); select.dataset.choice=String(i);
+    const x=list[i], start=mins(SLOTS[x.e.s][0]), dist=COMMUTE_ROUTES[x.b];
+    const walk=Math.ceil(dist/ (4000/60));
+    const leaveDorm=start-5-walk, leaveRoom=leaveDorm-2;
+    $('commute-result').innerHTML = '<div class="commute-main"><span class="commute-kicker">'+t('До выхода из общаги')+'</span><strong class="commute-time">'+fmtClock(leaveDorm)+'</strong><span class="commute-sub">'+t('Из комнаты примерно')+' <b>'+fmtClock(leaveRoom)+'</b></span></div>'+
+      '<div class="commute-metrics"><div><span>'+t('Пешком')+'</span><strong>'+walk+' '+t('мин ходьбы')+'</strong></div><div><span>'+t('Расстояние')+'</span><strong>'+dist+' м</strong></div><div><span>'+t('Пара начинается')+'</span><strong>'+SLOTS[x.e.s][0]+'</strong></div></div>'+
+      '<div class="commute-destination"><span class="destination-pin">⌖</span><div><span>'+t('До корпуса')+' '+x.b+'</span><strong>'+escapeHtml(x.e.n)+'</strong><small>'+t('Вход в корпус')+' за 5 минут до начала</small></div></div>';
+  };
+  select.onchange = update; update();
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render() { renderHero(); renderVariants(); renderCalc(); renderCues(); renderPlan(); renderSched(); renderCommute(); }
+
+// Оформление: кнопка в шапке, режим и палитры без названий
+const PALS = [
+  { id: 'indigo', sw: ['#3445BF', '#B85F00'] }, { id: 'ocean', sw: ['#0B6E80', '#C2410C'] },
+  { id: 'forest', sw: ['#2F6B3F', '#A8590A'] }, { id: 'rose', sw: ['#A8286B', '#B4530F'] },
+  { id: 'graphite', sw: ['#2E3138', '#8A6A00'] }, { id: 'violet', sw: ['#5D259D', '#966708'] },
+  { id: 'teal', sw: ['#1D7C72', '#962408'] }, { id: 'crimson', sw: ['#9D2539', '#966208'] },
+  { id: 'amber', sw: ['#9D6D25', '#960D08'] }, { id: 'olive', sw: ['#597C1D', '#963C08'] },
+  { id: 'coffee', sw: ['#9D5525', '#085B96'] }, { id: 'sky', sw: ['#25659D', '#964F08'] }
+];
+const THEMES = [['auto', 'Авто', 'auto'], ['light', 'Светлый', 'sun'], ['dark', 'Тёмный', 'moon']];
+let themeTouched = false;
+function applyLook() {
+  const r = document.documentElement;
+  if (S.pal && S.pal !== 'indigo') r.setAttribute('data-palette', S.pal); else r.removeAttribute('data-palette');
+  if (S.theme === 'light' || S.theme === 'dark') { r.setAttribute('data-theme', S.theme); themeTouched = true; }
+  else if (themeTouched) { r.removeAttribute('data-theme'); themeTouched = false; }
+  paintChrome();
+}
+function renderLook() {
+  $('theme-seg').innerHTML = THEMES.map(t => '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (S.theme === t[0]) + '">' + ic(t[2]) + t[1] + '</button>').join('');
+  $('pals').innerHTML = PALS.map((p, i) => '<button class="sw" type="button" data-pal="' + p.id + '" aria-label="Палитра ' + (i + 1) + '" aria-pressed="' + (S.pal === p.id) + '" style="background:linear-gradient(135deg,' + p.sw[0] + ' 50%,' + (p.sw[1] || p.sw[0]) + ' 50%)"></button>').join('');
+  document.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.themePick; save(); haptic(10); applyLook(); renderLook(); }));
+  document.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => { S.pal = b.dataset.pal; save(); haptic(10); applyLook(); renderLook(); }));
+}
+function setLookOpen(open) {
+  $('lookpop').hidden = !open; if (open) $('langpop').hidden = true;
+  $('look-btn').setAttribute('aria-expanded', String(open));
+}
+$('look-btn').addEventListener('click', ev => { ev.stopPropagation(); setLookOpen($('lookpop').hidden); });
+document.addEventListener('click', ev => { if (!$('lookpop').hidden && !ev.composedPath().includes($('lookpop'))) setLookOpen(false); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') setLookOpen(false); });
+
+function fillForm() {
+  $('f-wake').value = S.wake;
+  $('f-sleep').value = S.sleep;
+  $('f-prep').value = S.prep;
+  $('f-fall').value = S.fall;
+  $('f-unsure').checked = S.unsure;
+}
+function bind() {
+  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  $('daygrid').innerHTML = names.map((n, i) => '<label for="ld-' + (i + 1) + '">' + n + '<input id="ld-' + (i + 1) + '" type="number" min="0" max="600" step="5" placeholder="общее"></label>').join('');
+  names.forEach((n, i) => {
+    const el = $('ld-' + (i + 1));
+    const v = S.leadDay[i + 1];
+    el.value = (v === undefined || v === null || v === '') ? '' : v;
+    el.addEventListener('input', ev => {
+      if (ev.target.value === '') delete S.leadDay[i + 1]; else S.leadDay[i + 1] = Math.max(0, Math.min(600, Number(ev.target.value)));
+      save(); keepFocus(render);
+    });
+  });
+  fillForm();
+  const num = { sleep: 'f-sleep', prep: 'f-prep', fall: 'f-fall' };
+  Object.keys(num).forEach(key => $(num[key]).addEventListener('input', ev => {
+    if (ev.target.value === '') return;
+    S[key] = Number(ev.target.value); save(); render();
+  }));
+  $('f-wake').addEventListener('input', ev => { if (ev.target.value) { S.wake = ev.target.value; save(); render(); } });
+  $('f-unsure').addEventListener('change', ev => { S.unsure = ev.target.checked; save(); haptic(10); render(); });
+  $('f-reset').addEventListener('click', () => { haptic(16); S = { ...DEF, leadDay: {}, pal: S.pal, theme: S.theme, sub: S.sub, lang: S.lang }; save(); fillForm(); names.forEach((n, i) => { $('ld-' + (i + 1)).value = ''; }); render(); });
+}
+
+// Дыхание 4-7-8
+const PH = [['Вдох', 4], ['Задержка', 7], ['Выдох', 8]];
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let br = { on: false, t: null, phase: 0, left: 0, cycle: 1 };
+function brPaint() {
+  const c = $('brc');
+  c.style.transitionDuration = reduce ? '0s' : PH[br.phase][1] + 's';
+  c.style.transform = 'scale(' + (br.phase === 2 ? 0.55 : 1) + ')';
+  $('brph').textContent = t(PH[br.phase][0]);
+  $('brsec').textContent = br.left;
+  $('brsub').textContent = tf('Цикл {0} из 4', br.cycle);
+}
+function brStop(done) {
+  clearInterval(br.t); br.on = false;
+  const c = $('brc'); c.style.transitionDuration = reduce ? '0s' : '1.5s'; c.style.transform = 'scale(.55)';
+  $('brph').textContent = done ? t('Готово') : t('Пауза'); $('brsec').textContent = '4-7-8';
+  $('brsub').textContent = done ? t('Четыре цикла закончились. Если сна нет, повторите или попробуйте другой способ.') : t('Нажмите «Начать», когда будете готовы.');
+  $('brbtn').innerHTML = ic('play') + (done ? t('Ещё раз') : t('Начать'));
+}
+function brTick() {
+  br.left -= 1;
+  if (br.left <= 0) {
+    br.phase += 1;
+    if (br.phase >= 3) { br.phase = 0; br.cycle += 1; if (br.cycle > 4) { brStop(true); return; } }
+    br.left = PH[br.phase][1];
+  }
+  brPaint();
+}
+$('brbtn').addEventListener('click', () => {
+  if (br.on) { brStop(false); return; }
+  br = { on: true, t: null, phase: 0, left: PH[0][1], cycle: 1 };
+  $('brbtn').textContent = t('Остановить');
+  brPaint();
+  br.t = setInterval(brTick, 1000);
+});
+$('d-breath').addEventListener('toggle', () => { if (!$('d-breath').open && br.on) brStop(false); });
+
+// Вкладки
+const SUBS = [['var', 'sparkles', 'Варианты'], ['calc', 'clock', 'Калькулятор'], ['week', 'list', 'Неделя'], ['tips', 'wind', 'Уснуть']];
+let sub = 'var';
+function showSub(t) {
+  sub = t;
+  $('sleep-overview').hidden = t !== 'var';
+  SUBS.forEach(s => { $('sp-' + s[0]).hidden = s[0] !== t; });
+  document.querySelectorAll('#subnav [data-sub]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sub === t)));
+  if (t !== 'tips' && br.on) brStop(false);
+  if (t === 'calc') renderCalc();
+}
+function showTab(t) {
+  $('tab-sched').hidden = t !== 'sched';
+  $('tab-sleep').hidden = t !== 'sleep';
+  $('mt-sched').setAttribute('aria-pressed', String(t === 'sched'));
+  $('mt-sleep').setAttribute('aria-pressed', String(t === 'sleep'));
+  if (t !== 'sleep' && br.on) brStop(false);
+  try { window.scrollTo(0, 0); } catch (e) {}
+}
+$('logo').innerHTML = logoSvg('h');
+$('inst-logo').innerHTML = logoSvg('i');
+$('look-btn').innerHTML = ic('palette');
+$('mt-sched').innerHTML = ic('calendar') + 'Расписание';
+$('mt-sleep').innerHTML = ic('moon') + 'Сон';
+$('brbtn').innerHTML = ic('play') + t('Начать');
+$('subnav').innerHTML = SUBS.map(s => '<button type="button" data-sub="' + s[0] + '" aria-pressed="false">' + ic(s[1]) + '<span>' + t(s[2]) + '</span></button>').join('');
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+document.querySelectorAll('#subnav [data-sub]').forEach(b => b.addEventListener('click', () => showSub(b.dataset.sub)));
+
+
+const LANGS = [['ru', 'RU', 'Русский'], ['en', 'EN', 'English'], ['fr', 'FR', 'Français'], ['tr', 'TR', 'Türkçe']];
+function renderLang() {
+  $('lang-btn').innerHTML = ic('globe') + LG.toUpperCase();
+  $('langpop').innerHTML = LANGS.map(l => '<button class="langopt" type="button" data-lang="' + l[0] + '" aria-pressed="' + (l[0] === LG) + '"><b>' + l[1] + '</b><span>' + l[2] + '</span>' + (l[0] === LG ? ic('check') : '') + '</button>').join('');
+  $('langpop').querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { S.lang = LG = b.dataset.lang; save(); haptic(10); $('langpop').hidden = true; $('lang-btn').setAttribute('aria-expanded', 'false'); relabel(); render(); }));
+}
+const closeLang = () => { $('langpop').hidden = true; $('lang-btn').setAttribute('aria-expanded', 'false'); };
+$('lang-btn').addEventListener('click', ev => { ev.stopPropagation(); const o = $('langpop').hidden; setLookOpen(false); $('langpop').hidden = !o; $('lang-btn').setAttribute('aria-expanded', String(o)); });
+document.addEventListener('click', ev => { if (!$('langpop').hidden && !ev.composedPath().includes($('langpop'))) closeLang(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeLang(); });
+// Оформление оболочки: цвета логотипа и системной строки следуют палитре и теме
+const mixHex = (h, t2, a) => { const n = parseInt(h.slice(1), 16), m = parseInt(t2.slice(1), 16); return '#' + [16, 8, 0].map(i => Math.round(((n >> i) & 255) * (1 - a) + ((m >> i) & 255) * a).toString(16).padStart(2, '0')).join(''); };
+let splashOn = true, dip = null;
+function paintChrome() {
+  const p = PALS.find(x => x.id === S.pal) || PALS[0], st = document.documentElement.style;
+  st.setProperty('--lg1', p.sw[0]); st.setProperty('--lg2', mixHex(p.sw[0], '#000000', .55));
+  const m = document.querySelector('meta[name="theme-color"]'), cs = getComputedStyle(document.documentElement);
+  if (m) m.content = splashOn ? p.sw[0] : (cs.getPropertyValue('--bg').trim() || m.content);
+  const key = p.id + (isDarkNow() ? 'd' : 'l');
+  if (key !== lastIco) { lastIco = key; setTimeout(updateIcons, 0); }
+}
+// Значок приложения следует палитре и светлой/тёмной теме: favicon, apple-touch-icon и манифест
+let lastIco = '';
+const isDarkNow = () => { const t2 = document.documentElement.dataset.theme; return t2 ? t2 === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); };
+async function updateIcons() {
+  const p = PALS.find(x => x.id === S.pal) || PALS[0], dk = isDarkNow();
+  const c1 = dk ? mixHex(p.sw[0], '#000000', .25) : p.sw[0], c2 = mixHex(p.sw[0], '#000000', dk ? .72 : .55);
+  const mk = (full, sc, size) => new Promise(res => {
+    let v = logoSvg('i').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ').replace('var(--lg1,#5568F0)', c1).replace('var(--lg2,#171F6B)', c2);
+    if (full) v = v.replace('rx="116"', 'rx="0"').replace('scale(1)', 'scale(' + sc + ')');
+    const im = new Image();
+    im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(im, 0, 0, size, size); res(c.toDataURL('image/png')); };
+    im.onerror = () => res(null);
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(v);
+  });
+  const [i192, i512, m512, a180] = await Promise.all([mk(false, 1, 192), mk(false, 1, 512), mk(true, .72, 512), mk(true, .9, 180)]);
+  if (!i192 || !a180) return;
+  const fav = document.querySelector('link[rel="icon"]'), apple = document.querySelector('link[rel="apple-touch-icon"]');
+  if (fav) { fav.href = i192; fav.type = 'image/png'; }
+  if (apple) apple.href = a180;
+  const mf = document.querySelector('link[rel="manifest"]');
+  if (!mf || !/^https?:/.test(location.protocol)) return;
+  try {
+    if (!window.__mf) window.__mf = await (await fetch('manifest.webmanifest')).json();
+    const m = Object.assign({}, window.__mf), abs = u => new URL(u, location.href).href;
+    m.start_url = abs(m.start_url || './'); m.scope = abs(m.scope || './'); m.id = m.id ? abs(m.id) : m.start_url;
+    m.theme_color = m.background_color = p.sw[0];
+    m.icons = [{ src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: m512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }];
+    mf.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+  } catch (e) {}
+}
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintChrome);
+// Установка на рабочий стол
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+const instSnoozed = () => { try { return Date.now() - Number(localStorage.getItem('rasp-inst')) < 6048e5; } catch (e) { return false; } };
+function ibText() {
+  const ios = !dip && isIos;
+  $('ib-t').textContent = t('Установить приложение');
+  $('ib-sub').textContent = t(ios ? 'Нажмите «Поделиться», затем «На экран Домой».' : 'Откроется с рабочего стола и работает без интернета.');
+  $('ib-yes').textContent = t('Установить'); $('ib-yes').hidden = ios;
+  $('ib-no').textContent = t(ios ? 'Понятно' : 'Позже');
+  if ($('splash-sub')) $('splash-sub').textContent = t('Расписание и режим сна');
+}
+function showInstall() {
+  if (splashOn || isStandalone() || instSnoozed() || !/^https?:/.test(location.protocol) || (!dip && !isIos)) return;
+  ibText(); $('ib-logo').innerHTML = logoSvg('b'); $('ibar').hidden = false;
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; setTimeout(showInstall, 1200); });
+window.addEventListener('appinstalled', () => { $('ibar').hidden = true; dip = null; });
+$('ib-yes').addEventListener('click', async () => { $('ibar').hidden = true; if (dip) { dip.prompt(); try { await dip.userChoice; } catch (e) {} dip = null; } });
+$('ib-no').addEventListener('click', () => { $('ibar').hidden = true; try { localStorage.setItem('rasp-inst', String(Date.now())); } catch (e) {} });
+// Заставка
+$('splash-logo').innerHTML = logoSvg('s');
+function endSplash() {
+  if (!splashOn) return;
+  splashOn = false; paintChrome(); $('splash').classList.add('out');
+  animNext = true; renderDay();
+  setTimeout(() => { $('splash').remove(); showInstall(); }, 1500);
+}
+$('splash').addEventListener('click', endSplash);
+setTimeout(endSplash, reduce ? 350 : 1200);
+
+const QUIPS = ['Понедельник, держимся', 'Вторник, уже легче', 'Среда, экватор недели', 'Четверг, почти пятница', 'Пятница, последний рывок', 'Суббота, а ты на парах'];
+function toast(msg) { const e = $('toast'); e.textContent = msg; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 2200); }
+
+// Seamless section swipes: gesture may begin anywhere, including schedule cards; vertical scroll remains native.
+(function enableSectionSwipes(){
+  if (!(('ontouchstart' in window) || navigator.maxTouchPoints > 0)) return;
+  const tabs=['sched','sleep']; let g=null, raf=0, activePane=null;
+  const panes=()=>[document.getElementById('tab-sched'),document.getElementById('tab-sleep')];
+  const blocked='input,textarea,select,button,a,summary,[contenteditable="true"],dialog';
+  document.addEventListener('touchstart',ev=>{
+    if(ev.touches.length!==1 || ev.target.closest(blocked) || ev.target.closest('.lookpop')) {g=null;return;}
+    const t=ev.touches[0], current=document.getElementById('tab-sleep').hidden?0:1;
+    g={x:t.clientX,y:t.clientY,dx:0,dy:0,start:current,axis:null}; activePane=panes()[current];
+  },{passive:true,capture:true});
+  document.addEventListener('touchmove',ev=>{
+    if(!g||ev.touches.length!==1)return;
+    const t=ev.touches[0];g.dx=t.clientX-g.x;g.dy=t.clientY-g.y;
+    if(!g.axis && Math.max(Math.abs(g.dx),Math.abs(g.dy))>7) g.axis=Math.abs(g.dx)>Math.abs(g.dy)*1.12?'x':'y';
+    if(g.axis!=='x')return;
+    const targetIndex=g.start+(g.dx<0?1:-1);
+    const bounded=(targetIndex<0||targetIndex>1)?g.dx*.22:g.dx;
+    activePane=document.getElementById('tab-'+tabs[g.start]);
+    activePane.classList.add('gesture-moving'); activePane.style.transform='translate3d('+bounded+'px,0,0)';
+    activePane.style.opacity=String(1-Math.min(Math.abs(bounded)/900,.12));
+  },{passive:true,capture:true});
+  const finish=cancelled=>{
+    if(!g)return; const dx=g.dx, axis=g.axis, from=g.start;g=null;
+    if(!activePane)return;
+    activePane.classList.remove('gesture-moving');
+    const next=from+(dx<0?1:-1), commit=!cancelled&&axis==='x'&&Math.abs(dx)>Math.min(54,window.innerWidth*.14)&&next>=0&&next<=1;
+    if(commit){activePane.style.transition='transform 220ms cubic-bezier(.22,1,.36,1),opacity 220ms ease';activePane.style.transform='translate3d('+(dx<0?'-24px':'24px')+',0,0)';activePane.style.opacity='.65';haptic(8);setTimeout(()=>{activePane.style.removeProperty('transition');activePane.style.removeProperty('transform');activePane.style.removeProperty('opacity');showTab(tabs[next]);activePane=null;},115);}
+    else {activePane.style.transition='transform 180ms cubic-bezier(.22,1,.36,1),opacity 180ms ease';activePane.style.transform='translate3d(0,0,0)';activePane.style.opacity='1';setTimeout(()=>{if(activePane){activePane.style.removeProperty('transition');activePane.style.removeProperty('transform');activePane.style.removeProperty('opacity');activePane=null;}},190);}
+  };
+  document.addEventListener('touchend',()=>finish(false),{passive:true,capture:true});
+  document.addEventListener('touchcancel',()=>finish(true),{passive:true,capture:true});
+})();
+
+function burst(x, y, items) {
+  for (let i = 0; i < 22; i++) {
+    const e = document.createElement('i'), a = Math.random() * Math.PI * 2, r = 50 + Math.random() * 130;
+    e.className = 'conf'; e.textContent = items[i % items.length];
+    e.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--dx:' + Math.cos(a) * r + 'px;--dy:' + (Math.sin(a) * r - 70) + 'px;--rot:' + (Math.random() * 600 - 300) + 'deg;color:hsl(' + Math.round(Math.random() * 360) + ' 85% 62%)';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 1300);
+  }
+}
+let logoTaps = 0, logoT = 0;
+$('logo').addEventListener('click', () => {
+  clearTimeout(logoT); logoT = setTimeout(() => { logoTaps = 0; }, 1500);
+  if (++logoTaps >= 5) {
+    logoTaps = 0; const r = $('logo').getBoundingClientRect();
+    $('logo').classList.add('spin'); setTimeout(() => $('logo').classList.remove('spin'), 900);
+    burst(r.left + r.width / 2, r.top + r.height / 2, ['☾', '★', '✦', '🎓']); toast(t('Спи, студент!'));
+  }
+});
+
+// Пасхалка №2: семь нажатий на луну открывают секретное послание.
+let moonTaps = 0, moonTimer = 0;
+document.addEventListener('click', ev => {
+  const moon = ev.target.closest && ev.target.closest('.sleep-illustration');
+  if (!moon) return;
+  clearTimeout(moonTimer); moonTimer = setTimeout(() => { moonTaps = 0; }, 1800);
+  if (++moonTaps >= 7) {
+    moonTaps = 0;
+    const r = moon.getBoundingClientRect();
+    burst(r.left + r.width * .68, r.top + r.height * .42, ['🌙', '✨', '🐈', '💤', '⭐']);
+    toast('Луна одобряет твой режим. +1 к сонности'); haptic(18);
+  }
+});
+
+// Пасхалка №3: быстро нажми на заголовок приложения три раза.
+let titleTaps = 0, titleTimer = 0;
+document.querySelector('h1')?.addEventListener('click', ev => {
+  clearTimeout(titleTimer); titleTimer = setTimeout(() => { titleTaps = 0; }, 1300);
+  if (++titleTaps >= 3) {
+    titleTaps = 0; const r = ev.currentTarget.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, ['📚', '☕', '🎓', '💫']);
+    toast('Секрет студента: дедлайн ближе, чем кажется 😅'); haptic(12);
+  }
+});
+applyLook();
+renderLook();
+bind();
+render();
+showSub('var');
+showTab('sched');
+$('dict-btn').innerHTML = ic('book'); $('set-btn').innerHTML = ic('sliders'); $('sclose').innerHTML = ic('x');
+$('set-btn').addEventListener('click', () => $('setdlg').showModal());
+$('sclose').addEventListener('click', () => $('setdlg').close());
+$('setdlg').addEventListener('click', ev => { if (ev.target === $('setdlg')) $('setdlg').close(); }); $('dclose').innerHTML = ic('x');
+
+$('dict-btn').addEventListener('click', () => { renderDict(); $('dict').showModal(); });
+$('dclose').addEventListener('click', () => $('dict').close());
+$('dict').addEventListener('click', ev => { if (ev.target === $('dict')) $('dict').close(); });
+$('dq').addEventListener('input', renderDict);
+relabel();
+setInterval(() => { if (document.activeElement && /^(INPUT|SELECT)$/.test(document.activeElement.tagName)) return; renderHero(); renderCues(); renderDay(); }, 60000);
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
+</script>
+</body>
+</html>
+
+<style>
+/* v24: independent sleep sub-tabs; rhythm summary appears only in Variants */
+#tab-sleep #sleep-overview[hidden]{display:none!important}
+/* v23: genuinely combine the wake-up summary and compact bedtime choices */
+#tab-sleep #subnav{margin-bottom:12px}
+#tab-sleep #sleep-overview{display:flex;flex-direction:column;gap:0;margin-bottom:14px}
+#tab-sleep #hero{margin:0;border-radius:20px 20px 0 0;border-bottom:0;padding-bottom:10px}
+#tab-sleep #sp-var{margin:0;border-radius:0 0 20px 20px;border-top:1px solid var(--line);padding:8px 12px 12px;box-shadow:0 8px 26px color-mix(in srgb,var(--ink) 5%,transparent)}
+#tab-sleep #sp-var>h2{margin:0 0 7px;font-size:15px}
+#tab-sleep #sp-var .variant-choices{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:none;align-items:stretch;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:1px 0 3px}
+#tab-sleep #sp-var .variant-choices::-webkit-scrollbar{display:none}
+#tab-sleep #sp-var .variant-choices .var{grid-template-columns:minmax(0,1fr);align-content:space-between;gap:5px;min-width:0;min-height:66px;padding:7px 8px;border-radius:12px}
+#tab-sleep #sp-var .variant-choices .var>span:first-child{min-width:0}
+#tab-sleep #sp-var .variant-choices .vt{font-size:9px;line-height:1.15}
+#tab-sleep #sp-var .variant-choices .vs{display:block;font-size:9px;line-height:1.15;margin-top:3px}
+#tab-sleep #sp-var .variant-choices .vb{justify-self:start;font-size:16px;line-height:1.1;white-space:nowrap}
+@media(max-width:380px){#tab-sleep #sp-var{padding-left:9px;padding-right:9px}#tab-sleep #sp-var .variant-choices{grid-auto-columns:88px;gap:5px}#tab-sleep #sp-var .variant-choices .var{min-height:61px;padding:6px}}
+</style>
