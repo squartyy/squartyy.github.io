@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0E1710">
+<meta name="theme-color" content="transparent">
 <meta name="application-name" content="Пары и сон">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -395,7 +395,7 @@ button{transition:transform .12s,background-color .2s,border-color .2s,color .2s
 .vt .ic,.switch .ic,.de .ic{margin-right:6px;vertical-align:-3px;color:var(--night)}.plan th .ic,th .ic{margin-right:4px;vertical-align:-3px}
 .seg .btn>.ic{color:var(--night);margin-bottom:2px}.gap .ic{margin-right:4px;vertical-align:-3px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-html{background:var(--bg)}
+html{background:transparent} body{background-color:var(--bg)}
 :root{--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.4,.64,1);--lg1:#3445BF;--lg2:#16205A}
 body{padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -1388,7 +1388,7 @@ function paintChrome() {
   const p = PALS.find(x => x.id === S.pal) || PALS[0], st = document.documentElement.style;
   st.setProperty('--lg1', p.sw[0]); st.setProperty('--lg2', mixHex(p.sw[0], '#000000', .55));
   const m = document.querySelector('meta[name="theme-color"]'), cs = getComputedStyle(document.documentElement);
-  if (m) m.content = splashOn ? p.sw[0] : (cs.getPropertyValue('--bg').trim() || m.content);
+  if (m) m.content = 'transparent';
   const key = p.id + (isDarkNow() ? 'd' : 'l');
   if (key !== lastIco) { lastIco = key; setTimeout(updateIcons, 0); }
 }
@@ -1417,7 +1417,7 @@ async function updateIcons() {
     if (!window.__mf) window.__mf = await (await fetch('manifest.webmanifest')).json();
     const m = Object.assign({}, window.__mf), abs = u => new URL(u, location.href).href;
     m.start_url = abs(m.start_url || './'); m.scope = abs(m.scope || './'); m.id = m.id ? abs(m.id) : m.start_url;
-    m.theme_color = m.background_color = p.sw[0];
+    m.theme_color = 'transparent'; m.background_color = cs.getPropertyValue('--bg').trim() || p.sw[0];
     m.icons = [{ src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: m512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }];
     mf.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
   } catch (e) {}
@@ -1430,8 +1430,8 @@ const instSnoozed = () => { try { return Date.now() - Number(localStorage.getIte
 function ibText() {
   const manual = !dip;
   $('ib-t').textContent = t('Установить приложение');
-  $('ib-sub').textContent = t(manual ? (isIos ? 'Установите Пары и сон на устройство: нажмите «Поделиться» → «На экран Домой». Это откроет приложение с главного экрана.' : 'Установите Пары и сон как приложение: в меню браузера выберите «Установить приложение» или «Установить». После установки оно появится на главном экране и сможет работать офлайн.') : 'Установите Пары и сон на устройство как полноценное приложение. Работает офлайн и запускается с главного экрана — не просто закладка.');
-  $('ib-yes').textContent = t(isIos ? 'Как установить' : 'Установить приложение'); $('ib-yes').hidden = isIos;
+  $('ib-sub').textContent = t(manual ? (isIos ? 'Сначала попробуйте установить приложение: нажмите «Поделиться» → «На экран Домой». Если Safari предлагает только добавление на экран Домой, это будет ярлык веб-приложения.' : 'Сначала попробуйте установить полноценное приложение через меню браузера («Установить приложение»). Если браузер не поддерживает PWA-установку и предлагает только «Добавить на главный экран», можно использовать ярлык.') : 'Установите Пары и сон как полноценное приложение. Оно запускается отдельно от вкладки и поддерживает офлайн-режим.');
+  $('ib-yes').textContent = t(isIos ? 'Как установить' : (dip ? 'Установить приложение' : 'Попробовать установить')); $('ib-yes').hidden = false;
   $('ib-no').textContent = t('Не сейчас');
   if ($('splash-sub')) $('splash-sub').textContent = t('Расписание и режим сна');
 }
@@ -1443,8 +1443,8 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = 
 window.addEventListener('appinstalled', () => { $('ibar').hidden = true; dip = null; });
 $('ib-yes').addEventListener('click', async () => {
   if (dip) { const promptEvent = dip; dip = null; $('ibar').hidden = true; try { await promptEvent.prompt(); const choice = await promptEvent.userChoice; if (choice && choice.outcome === 'dismissed') { /* let the user reopen the prompt later */ } } catch (e) { toast(t('Откройте меню браузера и выберите «Установить приложение».')); } }
-  else if (isIos) { toast(t('Нажмите «Поделиться» → «На экран Домой».')); }
-  else { toast(t('Откройте меню браузера и выберите «Установить приложение».')); }
+  else if (isIos) { toast(t('В Safari: «Поделиться» → «На экран Домой». Если доступна установка веб-приложения, подтвердите её там.')); }
+  else { toast(t('В меню браузера сначала ищите «Установить приложение». Если такого пункта нет — «Добавить на главный экран» (ярлык).')); }
 });
 $('ib-no').addEventListener('click', () => { $('ibar').hidden = true; try { localStorage.setItem('rasp-inst', String(Date.now())); } catch (e) {} });
 $('ib-close').addEventListener('click', () => { $('ibar').hidden = true; try { localStorage.setItem('rasp-inst', String(Date.now())); } catch (e) {} });
