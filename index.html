@@ -351,10 +351,38 @@ body,.panel,.card,.maintabs,.iconbtn,.lookpop{transition:background-color .35s e
 .ib-act{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 @media (max-width:420px){.eyebrow{font-size:9.5px;letter-spacing:.03em}.iconbtn{width:38px;height:38px}.langbtn{width:auto;height:38px}.hbtns{gap:5px}.logo{width:38px;height:38px}h1{font-size:17px}.brand{gap:8px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+:root{--t-lec:#2F55D4;--t-pr:#0B8458;--t-lab:#C2410C;--t-cur:#7C3AED}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--t-lec:#8FB0FF;--t-pr:#5EDDA2;--t-lab:#FFA062;--t-cur:#C9A8FF}}
+:root[data-theme="dark"]{--t-lec:#8FB0FF;--t-pr:#5EDDA2;--t-lab:#FFA062;--t-cur:#C9A8FF}
+[data-t="лек"]{--tc:var(--t-lec)}[data-t="пр"]{--tc:var(--t-pr)}[data-t="лаб"]{--tc:var(--t-lab)}[data-t="кур"]{--tc:var(--t-cur)}
+.tchip{font-weight:700;letter-spacing:.01em;color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,var(--surface));border-color:color-mix(in srgb,var(--tc) 50%,transparent)}
+.tbadge[data-t]{background:color-mix(in srgb,var(--tc) 16%,var(--surface));color:var(--tc)}
+.night-pick{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:10px 0 4px}
+.night-pick .lab{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.night-pick b{font-family:var(--f-mono);font-size:32px;color:var(--night)}
+.npick-alt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.var.static{cursor:default}.var.static:active{transform:none}
+html,body{background:var(--bg)}body{background:transparent}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .6s ease;animation:tw2 6s ease-in-out infinite;
+background-image:radial-gradient(1.6px 1.6px at 12% 14%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 78% 9%,#fff,transparent 60%),radial-gradient(1.8px 1.8px at 90% 38%,#ffd9a0,transparent 60%),radial-gradient(1.2px 1.2px at 6% 52%,#fff,transparent 60%),radial-gradient(1.6px 1.6px at 62% 66%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 30% 82%,#ffd9a0,transparent 60%),radial-gradient(1.6px 1.6px at 88% 90%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 46% 30%,#fff,transparent 60%)}
+:root[data-theme="dark"] body::before{opacity:.55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body::before{opacity:.55}}
+@keyframes tw2{0%,100%{filter:brightness(1)}50%{filter:brightness(.55)}}
+@keyframes zfloat{0%{transform:translate(0,0) scale(.8);opacity:0}30%{opacity:.9}100%{transform:translate(16px,-30px) scale(1.15);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes logospin{from{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.25)}to{transform:rotate(360deg) scale(1)}}
+@keyframes confly{from{transform:translate(0,0) rotate(0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.4);opacity:0}}
+.half.bed{position:relative}.zz{position:absolute;right:14px;top:34px}.zz i{position:absolute;font-style:normal;font-weight:800;color:var(--night);opacity:0;animation:zfloat 2.8s ease-in-out infinite}
+.zz i:nth-child(2){animation-delay:.9s;font-size:15px}.zz i:nth-child(3){animation-delay:1.8s;font-size:19px}
+.half.wake .lab .ic{animation:spin 16s linear infinite}
+.quip{margin:2px 0 8px;font-size:13px;color:var(--muted);font-style:italic}
+.logo.spin{animation:logospin .9s var(--ease)}
+.conf{position:fixed;z-index:200;pointer-events:none;font-style:normal;font-size:18px;animation:confly 1.1s var(--ease) forwards}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,24px);opacity:0;z-index:150;padding:10px 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;pointer-events:none;transition:transform .35s var(--spring),opacity .25s ease}
+#toast.on{transform:translate(-50%,0);opacity:1}
 </style>
 </head>
 <body>
 <div id="splash" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><div class="sp-c"><div class="sp-logo" id="splash-logo"></div><div class="sp-name">Пары и сон</div><div class="sp-sub" id="splash-sub"></div><div class="sp-bar"><span></span></div></div></div>
+<div id="toast" role="status"></div>
 <div class="install-bar" id="ibar" hidden><div class="ib-logo" id="ib-logo"></div><div class="ib-t" id="ib-t"></div><div class="ib-sub" id="ib-sub"></div><div class="ib-act"><button class="btn" id="ib-no" type="button"></button><button class="btn pri" id="ib-yes" type="button"></button></div></div>
 
 
@@ -506,7 +534,7 @@ body,.panel,.card,.maintabs,.iconbtn,.lookpop{transition:background-color .35s e
     
   </div>
 
-  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппы по словам старосты: информатика у 1-й подгруппы по вторникам и в четверг на 2-й неделе, у 2-й по пятницам и в четверг на 1-й неделе. Химия в эти четверги у другой подгруппы поставлена по логике и помечена «предположение». Если выбрана «Обе», подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
+  <footer>Расписание действует с 1.09 по 28.12. Пары ОИЗ с датами в сентябре уже прошли и не показаны. 1 нед. началась 31 августа и чередуется с 2 нед. Подгруппы по словам старосты: информатика у 1-й подгруппы по вторникам и в четверг на 2-й неделе, у 2-й по пятницам и в четверг на 1-й неделе. Лабораторная по химии в четверг общая для всей группы, без подгрупп. Какие именно недели она идёт, не подтверждено, поэтому она помечена «предположение». Если выбрана «Обе», подъём и отбой считаются по самой ранней паре любой из подгрупп.<p class="sign">Сделал Ванек для братвы 51</p></footer>
 </main>
 
 
@@ -536,15 +564,14 @@ const L = [
   {d:3,s:5,w:2,t:'лек',n:'Введение в инженерное образование',r:'ауд. 405, к. 6',p:'преподаватель не назначен',unsure:1},
 
   {d:4,s:0,w:1,t:'кур',n:'Кураторский / информационный час',r:'ауд. 208, к. 6',p:'Фёдорцев Р.В.'},
-  {d:4,s:1,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.',sub:1},
+  {d:4,s:1,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.'},
   {d:4,s:1,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
-  {d:4,s:2,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.',sub:1},
+  {d:4,s:2,w:1,t:'лаб',n:'Физика',r:'лаб. 412, к. 17',p:'Бобученко Д.С., Садовский А.А.'},
   {d:4,s:2,w:2,t:'лаб',n:'Профессиональное обучение по профессиям рабочих',r:'мастерские, к. 7',p:'Гусяцкий С.А.'},
   {d:4,s:3,w:0,t:'пр',n:'Физическая культура',r:'',p:'Кришталь С.А., Панова Е.В.'},
   {d:4,s:4,w:2,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:1},
   {d:4,s:4,w:1,t:'лаб',n:'Информатика',r:'ауд. 406, к. 6',p:'Кавальчук О.Н.',sub:2},
-  {d:4,s:4,w:1,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:1,guess:1},
-  {d:4,s:4,w:2,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',sub:2,guess:1},
+  {d:4,s:4,w:0,t:'лаб',n:'Химия',r:'лаб. 510, к. 11',p:'Стрелкова Е.В.',guess:1},
   {d:4,s:5,w:1,t:'пр',n:'ОИЗ. Математика',r:'ауд. 220, к. 6',p:'Тульев В.В.',unsure:1},
 
   {d:5,s:1,w:0,t:'лаб',n:'Технология конструкционных материалов',r:'лаб. 12, к. 7',p:'Чигринов В.Е., Пузынин Я.С.',sub:1},
@@ -585,7 +612,7 @@ const cyc = n => LG !== 'ru' ? t('цикл') : n === 1 ? 'цикл' : (n >= 2 &&
 const pairWord = n => LG !== 'ru' ? t('пар') : n === 1 ? 'пара' : (n >= 2 && n <= 4 ? 'пары' : 'пар');
 const wdayName = d => d.toLocaleDateString(LOC(), { weekday: 'long' });
 
-const DEF = { sub: 0, pal: 'indigo', theme: 'auto', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, until: '03:00', lang: '' };
+const DEF = { sub: 0, pal: 'indigo', theme: 'auto', lead: 90, leadDay: {}, prep: 60, sleep: 8, wake: '10:00', fall: 15, unsure: false, mode: 'early', night: false, calc: 'bed', calcBed: '23:30', calcWake: '08:00', until: '03:00', lang: '' };
 let S = { ...DEF };
 let skipped = {};
 // Хранение: память страницы (localStorage), копия в cookie на год. Читаем первое, что нашлось.
@@ -645,10 +672,10 @@ const T = {
 'Откроется с рабочего стола и работает без интернета.':['Opens from your home screen and works offline.','S’ouvre depuis l’écran d’accueil et fonctionne hors ligne.','Ana ekrandan açılır ve internetsiz çalışır.'],
 'Установить':['Install','Installer','Yükle'],'Позже':['Later','Plus tard','Sonra'],
 'Нажмите «Поделиться», затем «На экран Домой».':['Tap “Share”, then “Add to Home Screen”.','Touchez « Partager », puis « Sur l’écran d’accueil ».','“Paylaş”a, sonra “Ana Ekrana Ekle”ye dokunun.'],
-'Понятно':['Got it','Compris','Tamam'],'общее':['common','commun','ortak'],
+'Понятно':['Got it','Compris','Tamam'],'Подъём по плану был в {0}.':['The planned wake-up was at {0}.','Le lever prévu était à {0}.','Planlanan kalkış {0} idi.'],'общее':['common','commun','ortak'],"Понедельник, держимся": ["Monday, hang in there", "Lundi, courage", "Pazartesi, dayan"], "Вторник, уже легче": ["Tuesday, it gets easier", "Mardi, ça va mieux", "Salı, biraz daha kolay"], "Среда, экватор недели": ["Wednesday, midweek", "Mercredi, mi-semaine", "Çarşamba, haftanın ortası"], "Четверг, почти пятница": ["Thursday, almost Friday", "Jeudi, presque vendredi", "Perşembe, neredeyse cuma"], "Пятница, последний рывок": ["Friday, final push", "Vendredi, dernier effort", "Cuma, son gayret"], "Суббота, а ты на парах": ["Saturday, and you’re in class", "Samedi, et tu es en cours", "Cumartesi, ama derstesin"], "Спи, студент!": ["Sleep, student!", "Dors, étudiant !", "Uyu, öğrenci!"], "Свободен! Отдыхай.": ["Free! Enjoy.", "Libre ! Profite.", "Özgürsün! Keyfini çıkar."],"Калькулятор сна": ["Sleep calculator", "Calculateur de sommeil", "Uyku hesaplayıcı"], "Лягу в": ["Go to bed at", "Je me couche à", "Yatış saati"], "Встану в": ["Wake up at", "Je me lève à", "Kalkış saati"], "Подобранный подъём": ["Suggested wake-up", "Lever conseillé", "Önerilen kalkış"], "Другие варианты": ["Other options", "Autres options", "Diğer seçenekler"], "позже, чем нужно к первой паре": ["later than needed for the first class", "plus tard que nécessaire pour le premier cours", "ilk ders için gerekenden geç"], "Введите время, а приложение посчитает остальное по циклам по 90 минут и с учётом времени засыпания.": ["Enter a time and the app works out the rest in 90-minute cycles, counting time to fall asleep.", "Saisissez une heure, l’appli calcule le reste en cycles de 90 min, endormissement compris.", "Bir saat girin, uygulama gerisini 90 dk’lık döngülerle, uyuma süresi dahil hesaplar."], "Выберите, во сколько уляжетесь, и приложение подберёт подъём по циклам сна.": ["Choose when you’ll go to bed and the app picks a wake-up by sleep cycles.", "Choisissez l’heure du coucher, l’appli propose un lever selon les cycles.", "Ne zaman yatacağınızı seçin, uygulama döngülere göre kalkış saatini seçer."], "Чтобы выспаться, лягте не позже {0} (5 циклов). Минимум, 4 цикла, не позже {1}.": ["To sleep enough, go to bed by {0} (5 cycles). Minimum, 4 cycles, by {1}.", "Pour bien dormir, couchez-vous avant {0} (5 cycles). Minimum, 4 cycles, avant {1}.", "Yeterli uyku için en geç {0}’da yatın (5 döngü). En az 4 döngü için {1}."],
 'Расписание и режим сна':['Schedule & sleep routine','Emploi du temps et sommeil','Ders programı ve uyku düzeni']
 };
-const P = [["Что сделать до отбоя", ["What to do before bed and what to try if you lie awake. General tips, not treatment.", "Que faire avant le coucher et si vous restez éveillé. Conseils généraux, pas un traitement.", "Yatmadan önce ve uyuyamazsanız neler yapılır. Genel öneriler, tedavi değil."]], ["Дыхание 4-7-8", ["4-7-8 breathing, 4 cycles", "Respiration 4-7-8, 4 cycles", "4-7-8 nefesi, 4 döngü"]], ["Расслабление мышц", ["Progressive muscle relaxation", "Relaxation musculaire progressive", "Kasları sırayla gevşetme"]], ["Слова на выбранную", ["Words for a chosen letter", "Mots sur une lettre choisie", "Seçilen harfle kelimeler"]], ["Если лежите больше", ["If you lie awake over 20 minutes", "Si vous restez éveillé plus de 20 minutes", "20 dakikadan uzun uyanık yatarsanız"]], ["Выгрузить мысли на бумагу", ["Write your thoughts down", "Noter ses pensées", "Düşünceleri kâğıda dökün"]], ["Когда нужен врач", ["When to see a doctor", "Quand consulter", "Ne zaman doktora gidilmeli"]], ["Сядьте или лягте", ["Sit or lie comfortably. Inhale through the nose for 4 s, hold 7, exhale slowly through the mouth for 8. If dizzy, breathe normally.", "Installez-vous confortablement. Inspirez par le nez 4 s, retenez 7, expirez lentement par la bouche 8. En cas de vertige, respirez normalement.", "Rahat oturun veya yatın. Burundan 4 sn nefes alın, 7 sn tutun, ağızdan 8 sn yavaşça verin. Başınız dönerse normal nefes alın."]], ["Нажмите «Начать»", ["Press “Start” and follow the circle.", "Appuyez sur « Démarrer » et suivez le cercle.", "“Başla”ya basın ve daireyi izleyin."]], ["Лягте на спину", ["Lie on your back. Clench your feet for 5 s, then release for 10–15.", "Allongé sur le dos, serrez les pieds 5 s, relâchez 10–15 s.", "Sırtüstü yatın. Ayakları 5 sn sıkın, 10–15 sn bırakın."]], ["Так же двигайтесь", ["Move up the same way: calves, thighs, stomach, hands, shoulders.", "Montez de la même façon : mollets, cuisses, ventre, mains, épaules.", "Aynı şekilde yukarı çıkın: baldır, uyluk, karın, eller, omuzlar."]], ["В конце напрягите", ["Finally tense and relax the face: brows, jaw, forehead.", "Enfin, contractez puis relâchez le visage : sourcils, mâchoire, front.", "Sonunda yüzü sıkıp gevşetin: kaşlar, çene, alın."]], ["Весь круг занимает", ["The full round takes 10–15 minutes. Breathe evenly between muscle groups.", "Le tour complet dure 10–15 min. Respirez calmement entre les groupes.", "Tüm tur 10–15 dk sürer. Kas grupları arasında düzenli nefes alın."]], ["Это способ отвлечь", ["This distracts your mind from thoughts. Pick a neutral word, e.g. “star”. For each letter think of words: for “s”: sun, sand, sofa. Picture each for a few seconds, then move on. Don’t link them into a story.", "Cela détourne l’esprit des pensées. Choisissez un mot neutre, p. ex. « étoile ». Pour chaque lettre, trouvez des mots : pour « é » : été, école, écume. Imaginez chacun quelques secondes. Ne faites pas d’histoire.", "Zihni düşüncelerden uzaklaştırır. Nötr bir kelime seçin, örn. “yıldız”. Her harf için kelime bulun: “y” için yol, yaz, yelken. Her birini birkaç sn düşünün. Hikâye kurmayın."]], ["Не смотрите на часы", ["Don’t watch the clock or force yourself to sleep.", "Ne regardez pas l’heure et ne forcez pas le sommeil.", "Saate bakmayın, kendinizi uyumaya zorlamayın."]], ["Встаньте, включите", ["Get up, use dim light, do something quiet without a screen: a book, stretching, warm water.", "Levez-vous, lumière tamisée, activité calme sans écran : livre, étirements, eau chaude.", "Kalkın, loş ışık açın, ekransız sakin bir şey yapın: kitap, esneme, ılık su."]], ["Возвращайтесь в кровать", ["Go back to bed when you feel sleepy.", "Retournez au lit quand le sommeil vient.", "Uykunuz gelince yatağa dönün."]], ["Кровать только для сна", ["Bed is for sleep only. Games and phone in bed teach the brain not to sleep there.", "Le lit sert qu’à dormir. Jeux et téléphone au lit apprennent au cerveau à ne pas dormir.", "Yatak yalnızca uyku içindir. Yatakta oyun ve telefon beyne orada uyumamayı öğretir."]], ["За час до отбоя", ["An hour before bed, spend 5 minutes writing down everything on your mind: tasks, questions, worries. On paper, it’s easier to let go.", "Une heure avant, notez 5 min tout ce qui vous préoccupe : tâches, questions, soucis. Sur papier, c’est plus facile à lâcher.", "Yatmadan 1 saat önce 5 dk aklınızdakileri yazın: işler, sorular, kaygılar. Kâğıttaysa bırakmak kolaydır."]], ["Если проблемы со сном", ["If sleep problems last over three weeks or hurt your studies, see a doctor. I don’t recommend pills or supplements without a prescription.", "Si les troubles durent plus de trois semaines ou nuisent aux études, consultez. Je déconseille médicaments et compléments sans ordonnance.", "Uyku sorunları üç haftadan uzun sürerse veya derslerinizi etkilerse doktora gidin. Reçetesiz hap ve takviye önermem."]], ["Свой подъём по дням", ["Custom wake-up by day: minutes before the first class (empty = common value). Works in “Custom” mode.", "Lever perso par jour : minutes avant le premier cours (vide = valeur commune). Mode « Perso ».", "Güne özel kalkış: ilk dersten kaç dk önce (boş = ortak değer). “Özel” modda çalışır."]], ["Не учитывать пары ОИЗ", ["Ignore ОИЗ classes without dates. Check them with the group leader.", "Ignorer les cours ОИЗ sans dates. À vérifier auprès du délégué.", "Tarihsiz ОИЗ derslerini sayma. Grup başkanından teyit edin."]], ["Android, Chrome", ["Android, Chrome: menu, then “Add to Home screen”. iPhone, Safari: Share, then “Add to Home Screen”.", "Android, Chrome : menu, « Ajouter à l’écran d’accueil ». iPhone, Safari : Partager, « Sur l’écran d’accueil ».", "Android, Chrome: menü, “Ana ekrana ekle”. iPhone, Safari: Paylaş, “Ana Ekrana Ekle”."]], ["Подгруппа, режим, палитра", ["Subgroup, mode, palette and “absent” marks are saved in browser storage and duplicated in a cookie for a year. Clearing site data or switching browsers resets everything.", "Sous-groupe, mode, palette et absences sont gardés dans le navigateur et copiés dans un cookie un an. Effacer les données ou changer de navigateur réinitialise tout.", "Alt grup, mod, palet ve “yokum” işaretleri tarayıcıda saklanır, bir yıllık çerezde kopyalanır. Site verisini silmek veya tarayıcı değiştirmek her şeyi sıfırlar."]], ["Расписание действует", ["Schedule valid 1 Sep–28 Dec. September ОИЗ classes with dates have passed and are hidden. Week 1 began on 31 Aug and alternates with week 2. Subgroups per the group leader: computer science for subgroup 1 on Tuesdays and Thursday of week 2, for subgroup 2 on Fridays and Thursday of week 1. Chemistry on those Thursdays for the other subgroup is a logical guess, marked “assumption”. If “Both” is chosen, wake-up and bedtime follow the earliest class of either subgroup.", "Emploi du temps valable du 1.09 au 28.12. Les cours ОИЗ de septembre avec dates sont passés et masqués. La semaine 1 a commencé le 31 août et alterne avec la 2. Sous-groupes selon le délégué : informatique pour le 1 le mardi et le jeudi de la semaine 2, pour le 2 le vendredi et le jeudi de la semaine 1. La chimie ces jeudis pour l’autre sous-groupe est une hypothèse logique. Avec « Les deux », lever et coucher suivent le cours le plus tôt.", "Program 1.09–28.12 arası geçerli. Eylül’deki tarihli ОИЗ dersleri geçti ve gizlendi. 1. hafta 31 Ağustos’ta başladı, 2. haftayla dönüşümlü. Grup başkanına göre: bilişim 1. alt grupta salı ve 2. hafta perşembe, 2. alt grupta cuma ve 1. hafta perşembe. Bu perşembelerde diğer alt grubun kimyası mantıksal tahmindir. “İkisi” seçiliyse kalkış ve yatış en erken derse göre hesaplanır."]]];
+const P = [["Что сделать до отбоя", ["What to do before bed and what to try if you lie awake. General tips, not treatment.", "Que faire avant le coucher et si vous restez éveillé. Conseils généraux, pas un traitement.", "Yatmadan önce ve uyuyamazsanız neler yapılır. Genel öneriler, tedavi değil."]], ["Дыхание 4-7-8", ["4-7-8 breathing, 4 cycles", "Respiration 4-7-8, 4 cycles", "4-7-8 nefesi, 4 döngü"]], ["Расслабление мышц", ["Progressive muscle relaxation", "Relaxation musculaire progressive", "Kasları sırayla gevşetme"]], ["Слова на выбранную", ["Words for a chosen letter", "Mots sur une lettre choisie", "Seçilen harfle kelimeler"]], ["Если лежите больше", ["If you lie awake over 20 minutes", "Si vous restez éveillé plus de 20 minutes", "20 dakikadan uzun uyanık yatarsanız"]], ["Выгрузить мысли на бумагу", ["Write your thoughts down", "Noter ses pensées", "Düşünceleri kâğıda dökün"]], ["Когда нужен врач", ["When to see a doctor", "Quand consulter", "Ne zaman doktora gidilmeli"]], ["Сядьте или лягте", ["Sit or lie comfortably. Inhale through the nose for 4 s, hold 7, exhale slowly through the mouth for 8. If dizzy, breathe normally.", "Installez-vous confortablement. Inspirez par le nez 4 s, retenez 7, expirez lentement par la bouche 8. En cas de vertige, respirez normalement.", "Rahat oturun veya yatın. Burundan 4 sn nefes alın, 7 sn tutun, ağızdan 8 sn yavaşça verin. Başınız dönerse normal nefes alın."]], ["Нажмите «Начать»", ["Press “Start” and follow the circle.", "Appuyez sur « Démarrer » et suivez le cercle.", "“Başla”ya basın ve daireyi izleyin."]], ["Лягте на спину", ["Lie on your back. Clench your feet for 5 s, then release for 10–15.", "Allongé sur le dos, serrez les pieds 5 s, relâchez 10–15 s.", "Sırtüstü yatın. Ayakları 5 sn sıkın, 10–15 sn bırakın."]], ["Так же двигайтесь", ["Move up the same way: calves, thighs, stomach, hands, shoulders.", "Montez de la même façon : mollets, cuisses, ventre, mains, épaules.", "Aynı şekilde yukarı çıkın: baldır, uyluk, karın, eller, omuzlar."]], ["В конце напрягите", ["Finally tense and relax the face: brows, jaw, forehead.", "Enfin, contractez puis relâchez le visage : sourcils, mâchoire, front.", "Sonunda yüzü sıkıp gevşetin: kaşlar, çene, alın."]], ["Весь круг занимает", ["The full round takes 10–15 minutes. Breathe evenly between muscle groups.", "Le tour complet dure 10–15 min. Respirez calmement entre les groupes.", "Tüm tur 10–15 dk sürer. Kas grupları arasında düzenli nefes alın."]], ["Это способ отвлечь", ["This distracts your mind from thoughts. Pick a neutral word, e.g. “star”. For each letter think of words: for “s”: sun, sand, sofa. Picture each for a few seconds, then move on. Don’t link them into a story.", "Cela détourne l’esprit des pensées. Choisissez un mot neutre, p. ex. « étoile ». Pour chaque lettre, trouvez des mots : pour « é » : été, école, écume. Imaginez chacun quelques secondes. Ne faites pas d’histoire.", "Zihni düşüncelerden uzaklaştırır. Nötr bir kelime seçin, örn. “yıldız”. Her harf için kelime bulun: “y” için yol, yaz, yelken. Her birini birkaç sn düşünün. Hikâye kurmayın."]], ["Не смотрите на часы", ["Don’t watch the clock or force yourself to sleep.", "Ne regardez pas l’heure et ne forcez pas le sommeil.", "Saate bakmayın, kendinizi uyumaya zorlamayın."]], ["Встаньте, включите", ["Get up, use dim light, do something quiet without a screen: a book, stretching, warm water.", "Levez-vous, lumière tamisée, activité calme sans écran : livre, étirements, eau chaude.", "Kalkın, loş ışık açın, ekransız sakin bir şey yapın: kitap, esneme, ılık su."]], ["Возвращайтесь в кровать", ["Go back to bed when you feel sleepy.", "Retournez au lit quand le sommeil vient.", "Uykunuz gelince yatağa dönün."]], ["Кровать только для сна", ["Bed is for sleep only. Games and phone in bed teach the brain not to sleep there.", "Le lit sert qu’à dormir. Jeux et téléphone au lit apprennent au cerveau à ne pas dormir.", "Yatak yalnızca uyku içindir. Yatakta oyun ve telefon beyne orada uyumamayı öğretir."]], ["За час до отбоя", ["An hour before bed, spend 5 minutes writing down everything on your mind: tasks, questions, worries. On paper, it’s easier to let go.", "Une heure avant, notez 5 min tout ce qui vous préoccupe : tâches, questions, soucis. Sur papier, c’est plus facile à lâcher.", "Yatmadan 1 saat önce 5 dk aklınızdakileri yazın: işler, sorular, kaygılar. Kâğıttaysa bırakmak kolaydır."]], ["Если проблемы со сном", ["If sleep problems last over three weeks or hurt your studies, see a doctor. I don’t recommend pills or supplements without a prescription.", "Si les troubles durent plus de trois semaines ou nuisent aux études, consultez. Je déconseille médicaments et compléments sans ordonnance.", "Uyku sorunları üç haftadan uzun sürerse veya derslerinizi etkilerse doktora gidin. Reçetesiz hap ve takviye önermem."]], ["Свой подъём по дням", ["Custom wake-up by day: minutes before the first class (empty = common value). Works in “Custom” mode.", "Lever perso par jour : minutes avant le premier cours (vide = valeur commune). Mode « Perso ».", "Güne özel kalkış: ilk dersten kaç dk önce (boş = ortak değer). “Özel” modda çalışır."]], ["Не учитывать пары ОИЗ", ["Ignore ОИЗ classes without dates. Check them with the group leader.", "Ignorer les cours ОИЗ sans dates. À vérifier auprès du délégué.", "Tarihsiz ОИЗ derslerini sayma. Grup başkanından teyit edin."]], ["Android, Chrome", ["Android, Chrome: menu, then “Add to Home screen”. iPhone, Safari: Share, then “Add to Home Screen”.", "Android, Chrome : menu, « Ajouter à l’écran d’accueil ». iPhone, Safari : Partager, « Sur l’écran d’accueil ».", "Android, Chrome: menü, “Ana ekrana ekle”. iPhone, Safari: Paylaş, “Ana Ekrana Ekle”."]], ["Подгруппа, режим, палитра", ["Subgroup, mode, palette and “absent” marks are saved in browser storage and duplicated in a cookie for a year. Clearing site data or switching browsers resets everything.", "Sous-groupe, mode, palette et absences sont gardés dans le navigateur et copiés dans un cookie un an. Effacer les données ou changer de navigateur réinitialise tout.", "Alt grup, mod, palet ve “yokum” işaretleri tarayıcıda saklanır, bir yıllık çerezde kopyalanır. Site verisini silmek veya tarayıcı değiştirmek her şeyi sıfırlar."]], ["Расписание действует", ["Schedule valid 1 Sep–28 Dec. September ОИЗ classes with dates have passed and are hidden. Week 1 began on 31 Aug and alternates with week 2. Subgroups per the group leader: computer science for subgroup 1 on Tuesdays and Thursday of week 2, for subgroup 2 on Fridays and Thursday of week 1. The Thursday chemistry lab is for the whole group (no subgroups); which weeks it runs is unconfirmed, so it is marked “assumption”. If “Both” is chosen, wake-up and bedtime follow the earliest class of either subgroup.", "Emploi du temps valable du 1.09 au 28.12. Les cours ОИЗ de septembre avec dates sont passés et masqués. La semaine 1 a commencé le 31 août et alterne avec la 2. Sous-groupes selon le délégué : informatique pour le 1 le mardi et le jeudi de la semaine 2, pour le 2 le vendredi et le jeudi de la semaine 1. Le TP de chimie du jeudi concerne tout le groupe (sans sous-groupes) ; les semaines ne sont pas confirmées, d’où la mention « hypothèse ». Avec « Les deux », lever et coucher suivent le cours le plus tôt.", "Program 1.09–28.12 arası geçerli. Eylül’deki tarihli ОИЗ dersleri geçti ve gizlendi. 1. hafta 31 Ağustos’ta başladı, 2. haftayla dönüşümlü. Grup başkanına göre: bilişim 1. alt grupta salı ve 2. hafta perşembe, 2. alt grupta cuma ve 1. hafta perşembe. Perşembe kimya laboratuvarı tüm grup içindir (alt grup yok); hangi haftalarda olduğu doğrulanmadı, bu yüzden “tahmin” olarak işaretli. “İkisi” seçiliyse kalkış ve yatış en erken derse göre hesaplanır."]]];
 const pf = o => { const e = P.find(x => o.startsWith(x[0])), i = LI[LG]; return e && i !== undefined ? e[1][i] : o; };
 const t = k => { const a = T[k], i = LI[LG]; return (a && i !== undefined) ? a[i] : k; };
 const tf = (k, ...a) => t(k).replace(/\{(\d)\}/g, (_, i) => a[i]);
@@ -759,32 +786,9 @@ function findTarget() {
   let d = today, p = plan(d);
   for (let i = 0; i < 9; i++) {
     d = addDays(today, i); p = plan(d);
-    if (at(d, p.wake) > now) break;
+    if (at(d, Math.max(plan(d, 'early').wake, plan(d, 'late').wake, plan(d, 'custom').wake)) > now) break;
   }
   ctx = { d, p, wakeAt: at(d, p.wake), now };
-}
-
-function nightHtml() {
-  const { d, p, wakeAt, now } = ctx;
-  let h = '<div class="night-row"><label for="n-until">' + t('Освобожусь в') + '</label><input id="n-until" type="time" value="' + S.until + '"></div>';
-  const [uh, um] = S.until.split(':').map(Number);
-  let stop = new Date(wakeAt.getFullYear(), wakeAt.getMonth(), wakeAt.getDate(), uh, um);
-  if (stop >= wakeAt) stop = new Date(stop.getFullYear(), stop.getMonth(), stop.getDate() - 1, uh, um);
-  const sleepStart = new Date(stop.getTime() + S.fall * 6e4);
-  const sleepMin = Math.max(0, (wakeAt - sleepStart) / 6e4);
-  const cycles = Math.floor(sleepMin / 90);
-  const stop5 = new Date(wakeAt.getTime() - (5 * 90 + S.fall) * 6e4), stop4 = new Date(wakeAt.getTime() - (4 * 90 + S.fall) * 6e4);
-  let cls, title, tips = [];
-  if (stop < now) { cls = 'mid'; title = t('Это время уже прошло'); tips.push(t('Выберите время окончания позже текущего.')); }
-  else {
-    if (sleepMin >= 450) { cls = 'good'; title = t('Сон') + ' ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + t('. Хватает.'); }
-    else if (sleepMin >= 360) { cls = 'mid'; title = t('Сон') + ' ' + dur(sleepMin) + ', ' + cycles + ' ' + cyc(cycles) + t('. Терпимо.'); tips.push(tf('Днём может клонить в сон. Кофе лучше не позже {0}.', hmDate(new Date(wakeAt.getTime() + 6 * 36e5)))); }
-    else { cls = 'bad'; title = t('Сон') + ' ' + dur(sleepMin) + (cycles ? ', ' + cycles + ' ' + cyc(cycles) : '') + t('. Мало.'); tips.push(t('Такой недосып скажется на парах. Не повторяйте две такие ночи подряд.')); tips.push(t('Если будет окно между парами, поспите 20–30 минут, но не позже 16:00, чтобы не сбить следующую ночь.')); }
-    if (p.cs.length && sleepMin < 450 && S.mode !== 'late') tips.push(tf('Подъём можно сдвинуть на «впритык» ({0}), если успеваете собраться быстрее.', hm(plan(d, 'late').wake)));
-    tips.push(tf('Чтобы выспаться по плану, освободиться нужно до {0} (5 циклов). Минимум, 4 цикла, до {1}.', hmDate(stop5), hmDate(stop4)));
-    tips.push(t('За 30–60 минут до конца включите ночной режим на экране и приглушите свет.'));
-  }
-  return h + '<div class="verdict ' + cls + '"><b>' + title + '</b><ul>' + tips.map(t => '<li>' + t + '</li>').join('') + '</ul></div>';
 }
 
 function renderHero() {
@@ -792,23 +796,33 @@ function renderHero() {
   const { d, p, wakeAt, now } = ctx;
   const bedAt = at(d, p.bed);
   let note;
-  if (now >= bedAt && now < wakeAt) note = tf('Отбой был в {0}. Сейчас пора спать, подъём через {1}.', hm(p.bed), dur((wakeAt - now) / 6e4));
+  if (now >= wakeAt) note = tf('Подъём по плану был в {0}.', hm(p.wake));
+  else if (now >= bedAt && now < wakeAt) note = tf('Отбой был в {0}. Сейчас пора спать, подъём через {1}.', hm(p.bed), dur((wakeAt - now) / 6e4));
   else note = tf('До отбоя {0}.', dur((bedAt - now) / 6e4));
   const why = p.cs.length
     ? tf('Первая пара {0}, подъём {1}', p.first, S.mode === 'late' ? tf('впритык, за {0} мин до неё.', S.prep) : S.mode === 'custom' ? tf('за {0} мин до неё.', leadFor(dow(d))) : t('пораньше, с запасом.'))
     : tf('В этот день пар нет, подъём {0}.', hm(p.wake));
   $('hero').innerHTML =
     '<div class="hero-head">' + ic('alarm') + '<span>' + t('Ближайший подъём') + ': ' + wdayName(d) + ', ' + d.toLocaleDateString(LOC(), { day: 'numeric', month: 'long' }) + '</span></div>' +
-    '<div class="pair"><div class="half bed"><div class="lab">' + ic('moon') + t('Отбой') + '</div><div class="big">' + hm(p.bed) + '</div><div class="sub">' + t('сон') + ' ' + String(S.sleep).replace('.', ',') + ' ' + t('ч') + '</div></div>' +
+    (now >= bedAt && now < wakeAt ? '<div class="pair zzon">' : '<div class="pair">') + '<div class="half bed">' + (now >= bedAt && now < wakeAt ? '<span class="zz"><i>z</i><i>z</i><i>Z</i></span>' : '') + '<div class="lab">' + ic('moon') + t('Отбой') + '</div><div class="big">' + hm(p.bed) + '</div><div class="sub">' + t('сон') + ' ' + String(S.sleep).replace('.', ',') + ' ' + t('ч') + '</div></div>' +
     '<div class="half wake"><div class="lab">' + ic('sun') + t('Подъём') + '</div><div class="big">' + hm(p.wake) + '</div><div class="sub">' + (p.cs.length ? t('пары с') + ' ' + p.first : t('пар нет')) + '</div></div></div>' +
-    '<p class="hero-note">' + note + ' ' + why + '</p>' +
-    '<div class="nightbox"><button class="nightbtn" id="n-on" type="button" aria-pressed="' + S.night + '">' + ic('moon') + '<span>' + t('Ночная занятость') + '</span><span class="tog" aria-hidden="true"></span></button>' + (S.night ? nightHtml() : '') + '</div>';
-  $('n-on').addEventListener('click', () => { S.night = !S.night; save(); renderHero(); });
-  const nu = $('n-until');
-  if (nu) nu.addEventListener('input', ev => { if (ev.target.value) { S.until = ev.target.value; save(); keepFocus(renderHero); } });
+    '<p class="hero-note">' + note + ' ' + why + '</p>';
 }
 
 const CYC = [[6, 'С запасом'], [5, 'Идеал'], [4, 'Минимум'], [3, 'Аварийный']];
+function calcHtml() {
+  const { d, p } = ctx, mode = S.calc === 'wake' ? 'wake' : 'bed', tv = (mode === 'bed' ? S.calcBed : S.calcWake) || (mode === 'bed' ? '23:30' : '08:00'), [hh, mm] = tv.split(':').map(Number), base = hh * 60 + mm;
+  const latest = p.cs.length ? plan(d, 'late').wake : null;
+  let h = '<h2>' + ic('clock') + t('Калькулятор сна') + '</h2><p class="hint">' + t('Введите время, а приложение посчитает остальное по циклам по 90 минут и с учётом времени засыпания.') + '</p>' +
+    '<div class="seg" style="grid-template-columns:repeat(2,1fr)">' + [['bed', 'moon', 'Лягу в'], ['wake', 'sun', 'Встану в']].map(m => '<button class="btn" type="button" data-calc="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + ic(m[1]) + t(m[2]) + '</button>').join('') + '</div>' +
+    '<div class="night-row" style="margin:10px 0"><label for="calc-t">' + t(mode === 'bed' ? 'Лягу в' : 'Встану в') + '</label><input id="calc-t" type="time" value="' + tv + '"></div><div class="vars">';
+  CYC.forEach(c => {
+    const n = c[0], x = mode === 'bed' ? base + S.fall + n * 90 : base - S.fall - n * 90, wd = ((x % 1440) + 1440) % 1440;
+    const late = mode === 'bed' && latest != null && wd > latest && wd < latest + 360;
+    h += '<div class="var static' + (n <= 4 ? ' weak' : '') + '"><span><span class="vt">' + ic(n <= 4 ? 'clock' : 'moon') + t(c[1]) + '</span><br><span class="vs">' + n + ' ' + cyc(n) + ', ' + dur(n * 90) + '</span>' + (late ? '<br><span class="chip warn">' + t('позже, чем нужно к первой паре') + '</span>' : '') + '</span><span class="vb">' + hm(x) + '</span></div>';
+  });
+  return h + '</div>';
+}
 function renderVariants() {
   const { d, p } = ctx;
   const earlyP = plan(d, 'early'), lateP = plan(d, 'late'), customP = plan(d, 'custom');
@@ -838,8 +852,12 @@ function renderVariants() {
     h += row(hrs, t(c[1]), c[0] + ' ' + cyc(c[0]) + ', ' + dur(hrs * 60), c[0] <= 4);
   });
   h += '</div><p class="note">' + tf('Нажмите на вариант, и он станет основным в плане и в карточке выше. Отбой учитывает, что вы засыпаете за {0} мин.', S.fall) + '</p>';
+  h += calcHtml();
   const box = $('sp-var');
   box.innerHTML = h;
+  box.querySelectorAll('[data-calc]').forEach(b => b.addEventListener('click', () => { S.calc = b.dataset.calc; save(); renderVariants(); }));
+  const ct = $('calc-t');
+  if (ct) ct.addEventListener('input', ev => { if (ev.target.value) { S[S.calc === 'wake' ? 'calcWake' : 'calcBed'] = ev.target.value; save(); keepFocus(renderVariants); } });
   box.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); render(); }));
   box.querySelectorAll('[data-lead]').forEach(b => b.addEventListener('click', () => { S.lead = Number(b.dataset.lead); save(); render(); }));
   const li = $('lead-in');
@@ -919,7 +937,7 @@ function renderDay() {
     if (!g) { g = { s: e.s, items: [] }; groups.push(g); }
     g.items.push(e);
   });
-  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><div class="sumrow">' +
+  let h = '<div class="day-head"><h2>' + fmtDay(sel) + '</h2><p class="quip">' + t(QUIPS[dow(sel) - 1] || QUIPS[0]) + '</p><div class="sumrow">' +
     '<span class="pill">' + ic('calendar') + weekNo(sel) + ' ' + t('неделя') + '</span>';
   if (groups.length) {
     h += '<span class="pill">' + ic('list') + groups.length + ' ' + pairWord(groups.length) + '</span>' +
@@ -935,7 +953,7 @@ function renderDay() {
   else if (!cs.length) h += '<div class="empty">' + ic('sun') + '<span>' + t('В этот день пар нет.') + '</span></div>';
   const item = e => {
     const meta = (e.r ? '<span>' + ic('pin') + rm(e.r) + '</span>' : '') + (e.p ? '<span>' + ic('user') + t(e.p) + '</span>' : '');
-    let chips = '<span class="chip">' + t(TYPE[e.t]) + '</span>';
+    let chips = '<span class="chip tchip" data-t="' + e.t + '">' + t(TYPE[e.t]) + '</span>';
     if (e.unsure) chips += '<span class="chip warn">' + t('без дат, уточнить') + '</span>';
     if (e.guess) chips += '<span class="chip warn">' + t('предположение, уточнить') + '</span>';
     const joke = e.t === 'лек' ? '<div class="joke">' + ic('gamepad') + t('Примечание: это пара игры в Клеш Рояль') + '</div>' : '';
@@ -956,14 +974,15 @@ function renderDay() {
         const it = g.items.find(e => e.sub === n);
         inner += '<div class="subrow"><span class="sublab">' + t('Подгруппа') + ' ' + n + '</span>' + (it ? item(it) : '<div class="nopair">' + t('пары нет') + '</div>') + '</div>';
       });
-    } else inner = g.items.map(item).join('');
+    }
+    inner += g.items.filter(e => !e.sub).map(item).join('');
     h += '<div class="card' + (live ? ' now' : '') + (past ? ' past' : '') + (dim ? ' dim' : '') + '"><div class="time"><span>' + a + '</span><span>' + b + '</span>' + (live ? '<span class="flag">' + t('идёт сейчас') + '</span>' : '') + '</div><div class="body">' + inner + '</div></div>';
   });
   if (!HOLIDAYS[k]) h += '<button class="skipbtn" id="skipbtn" type="button">' + (skipped[k] ? ic('undo') + t('Вернуть пары на этот день') : ic('off') + t('Меня нет на парах в этот день')) + '</button>';
   $('day').innerHTML = h;
   $('day').classList.toggle('anim', animNext); animNext = false;
   const sb = $('skipbtn');
-  if (sb) sb.addEventListener('click', () => { if (skipped[k]) delete skipped[k]; else skipped[k] = 1; save(); render(); });
+  if (sb) sb.addEventListener('click', () => { const r = sb.getBoundingClientRect(), fun = !skipped[k]; if (skipped[k]) delete skipped[k]; else skipped[k] = 1; save(); render(); if (fun) { burst(r.left + r.width / 2, r.top, ['★', '☾', '✦', '✿']); toast(t('Свободен! Отдыхай.')); } });
 }
 
 function render() { renderHero(); renderVariants(); renderCues(); renderPlan(); renderSched(); }
@@ -1113,6 +1132,38 @@ function paintChrome() {
   st.setProperty('--lg1', p.sw[0]); st.setProperty('--lg2', mixHex(p.sw[0], '#000000', .55));
   const m = document.querySelector('meta[name="theme-color"]'), cs = getComputedStyle(document.documentElement);
   if (m) m.content = splashOn ? p.sw[0] : (cs.getPropertyValue('--bg').trim() || m.content);
+  const key = p.id + (isDarkNow() ? 'd' : 'l');
+  if (key !== lastIco) { lastIco = key; setTimeout(updateIcons, 0); }
+}
+// Значок приложения следует палитре и светлой/тёмной теме: favicon, apple-touch-icon и манифест
+let lastIco = '';
+const isDarkNow = () => { const t2 = document.documentElement.dataset.theme; return t2 ? t2 === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); };
+async function updateIcons() {
+  const p = PALS.find(x => x.id === S.pal) || PALS[0], dk = isDarkNow();
+  const c1 = dk ? mixHex(p.sw[0], '#000000', .25) : p.sw[0], c2 = mixHex(p.sw[0], '#000000', dk ? .72 : .55);
+  const mk = (full, sc, size) => new Promise(res => {
+    let v = logoSvg('i').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ').replace('var(--lg1,#5568F0)', c1).replace('var(--lg2,#171F6B)', c2);
+    if (full) v = v.replace('rx="116"', 'rx="0"').replace('scale(1)', 'scale(' + sc + ')');
+    const im = new Image();
+    im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(im, 0, 0, size, size); res(c.toDataURL('image/png')); };
+    im.onerror = () => res(null);
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(v);
+  });
+  const [i192, i512, m512, a180] = await Promise.all([mk(false, 1, 192), mk(false, 1, 512), mk(true, .72, 512), mk(true, .9, 180)]);
+  if (!i192 || !a180) return;
+  const fav = document.querySelector('link[rel="icon"]'), apple = document.querySelector('link[rel="apple-touch-icon"]');
+  if (fav) { fav.href = i192; fav.type = 'image/png'; }
+  if (apple) apple.href = a180;
+  const mf = document.querySelector('link[rel="manifest"]');
+  if (!mf || !/^https?:/.test(location.protocol)) return;
+  try {
+    if (!window.__mf) window.__mf = await (await fetch('manifest.webmanifest')).json();
+    const m = Object.assign({}, window.__mf), abs = u => new URL(u, location.href).href;
+    m.start_url = abs(m.start_url || './'); m.scope = abs(m.scope || './'); m.id = m.id ? abs(m.id) : m.start_url;
+    m.theme_color = m.background_color = p.sw[0];
+    m.icons = [{ src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: m512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }];
+    mf.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+  } catch (e) {}
 }
 if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintChrome);
 // Установка на рабочий стол
@@ -1145,6 +1196,26 @@ function endSplash() {
 }
 $('splash').addEventListener('click', endSplash);
 setTimeout(endSplash, reduce ? 350 : 1200);
+
+const QUIPS = ['Понедельник, держимся', 'Вторник, уже легче', 'Среда, экватор недели', 'Четверг, почти пятница', 'Пятница, последний рывок', 'Суббота, а ты на парах'];
+function toast(msg) { const e = $('toast'); e.textContent = msg; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 2200); }
+function burst(x, y, items) {
+  for (let i = 0; i < 22; i++) {
+    const e = document.createElement('i'), a = Math.random() * Math.PI * 2, r = 50 + Math.random() * 130;
+    e.className = 'conf'; e.textContent = items[i % items.length];
+    e.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--dx:' + Math.cos(a) * r + 'px;--dy:' + (Math.sin(a) * r - 70) + 'px;--rot:' + (Math.random() * 600 - 300) + 'deg;color:hsl(' + Math.round(Math.random() * 360) + ' 85% 62%)';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 1300);
+  }
+}
+let logoTaps = 0, logoT = 0;
+$('logo').addEventListener('click', () => {
+  clearTimeout(logoT); logoT = setTimeout(() => { logoTaps = 0; }, 1500);
+  if (++logoTaps >= 5) {
+    logoTaps = 0; const r = $('logo').getBoundingClientRect();
+    $('logo').classList.add('spin'); setTimeout(() => $('logo').classList.remove('spin'), 900);
+    burst(r.left + r.width / 2, r.top + r.height / 2, ['☾', '★', '✦', '🎓']); toast(t('Спи, студент!'));
+  }
+});
 applyLook();
 renderLook();
 bind();
