@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0D1120">
+<meta name="theme-color" content="#0E1710">
 <meta name="application-name" content="Пары и сон">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -429,9 +429,10 @@ body,.panel,.card,.maintabs,.iconbtn,.lookpop{transition:background-color .35s e
 #splash>i{position:absolute;width:4px;height:4px;border-radius:50%;background:#FFC261;animation:twinkle 2.6s ease-in-out infinite}
 #splash>i:nth-child(1){top:16%;left:18%}#splash>i:nth-child(2){top:24%;right:14%;animation-delay:.5s}#splash>i:nth-child(3){top:62%;left:10%;animation-delay:1s}
 #splash>i:nth-child(4){bottom:18%;right:20%;animation-delay:1.4s}#splash>i:nth-child(5){top:40%;right:8%;animation-delay:.8s}#splash>i:nth-child(6){bottom:28%;left:26%;animation-delay:1.8s}
-.install-bar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:50;max-width:536px;margin:0 auto;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;padding:14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.28);animation:sheet .45s var(--spring) both}
-.ib-logo{width:44px;height:44px;grid-row:span 2}.ib-t{font-weight:600}.ib-sub{font-size:13px;color:var(--muted)}
-.ib-act{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.install-bar{position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:49;max-width:536px;max-height:min(48vh,390px);overflow:auto;margin:0 auto;display:grid;grid-template-columns:72px minmax(0,1fr);gap:5px 12px;align-items:start;padding:16px;border-radius:22px;background:var(--surface);color:var(--ink);border:1px solid var(--night);box-shadow:0 14px 40px rgba(0,0,0,.32),0 0 24px color-mix(in srgb,var(--night) 15%,transparent);animation:sheet .45s var(--spring) both}
+.ib-close{position:absolute;right:8px;top:7px;width:30px;height:30px;border:0;background:transparent;color:var(--muted);font-size:23px;line-height:1}.ib-logo{width:72px;height:72px;grid-row:span 2;align-self:start}.ib-t{font-weight:700;font-size:17px;color:var(--ink)}.ib-sub{font-size:13px;line-height:1.45;color:var(--muted);white-space:pre-line}
+.ib-act{grid-column:1/-1;display:flex;flex-direction:column;gap:5px;margin-top:10px}.ib-act button{width:100%;min-height:44px}.ib-act #ib-no{background:transparent;border-color:transparent;color:var(--muted)}
+@media(max-height:650px){.install-bar{max-height:40vh;grid-template-columns:48px minmax(0,1fr);padding:12px}.ib-logo{width:48px;height:48px}}
 @media (max-width:420px){.eyebrow{font-size:9.5px;letter-spacing:.03em}.iconbtn{width:38px;height:38px}.langbtn{width:auto;height:38px}.hbtns{gap:5px}.logo{width:38px;height:38px}h1{font-size:17px}.brand{gap:8px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
@@ -523,7 +524,7 @@ body{background:radial-gradient(ellipse at 12% 0%,rgba(92,111,255,.13),transpare
 <body>
 <div id="splash" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><div class="sp-c"><div class="sp-logo" id="splash-logo"></div><div class="sp-name">Пары и сон</div><div class="sp-sub" id="splash-sub"></div><div class="sp-bar"><span></span></div></div></div>
 <div id="toast" role="status"></div>
-<div class="install-bar" id="ibar" hidden><div class="ib-logo" id="ib-logo"></div><div class="ib-t" id="ib-t"></div><div class="ib-sub" id="ib-sub"></div><div class="ib-act"><button class="btn" id="ib-no" type="button"></button><button class="btn pri" id="ib-yes" type="button"></button></div></div>
+<div class="install-bar" id="ibar" hidden><button class="ib-close" id="ib-close" type="button" aria-label="Закрыть">×</button><div class="ib-logo" id="ib-logo"></div><div class="ib-t" id="ib-t"></div><div class="ib-sub" id="ib-sub"></div><div class="ib-act"><button class="btn" id="ib-no" type="button"></button><button class="btn pri" id="ib-yes" type="button"></button></div></div>
 
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -1427,21 +1428,26 @@ const isStandalone = () => matchMedia('(display-mode: standalone)').matches || n
 const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 const instSnoozed = () => { try { return Date.now() - Number(localStorage.getItem('rasp-inst')) < 6048e5; } catch (e) { return false; } };
 function ibText() {
-  const ios = !dip && isIos;
+  const manual = !dip;
   $('ib-t').textContent = t('Установить приложение');
-  $('ib-sub').textContent = t(ios ? 'Нажмите «Поделиться», затем «На экран Домой».' : 'Откроется с рабочего стола и работает без интернета.');
-  $('ib-yes').textContent = t('Установить'); $('ib-yes').hidden = ios;
-  $('ib-no').textContent = t(ios ? 'Понятно' : 'Позже');
+  $('ib-sub').textContent = t(manual ? (isIos ? 'Установите Пары и сон на устройство: нажмите «Поделиться» → «На экран Домой». Это откроет приложение с главного экрана.' : 'Установите Пары и сон как приложение: в меню браузера выберите «Установить приложение» или «Установить». После установки оно появится на главном экране и сможет работать офлайн.') : 'Установите Пары и сон на устройство как полноценное приложение. Работает офлайн и запускается с главного экрана — не просто закладка.');
+  $('ib-yes').textContent = t(isIos ? 'Как установить' : 'Установить приложение'); $('ib-yes').hidden = isIos;
+  $('ib-no').textContent = t('Не сейчас');
   if ($('splash-sub')) $('splash-sub').textContent = t('Расписание и режим сна');
 }
 function showInstall() {
-  if (splashOn || isStandalone() || instSnoozed() || !/^https?:/.test(location.protocol) || (!dip && !isIos)) return;
+  if (splashOn || isStandalone() || instSnoozed() || !/^https?:/.test(location.protocol)) return;
   ibText(); $('ib-logo').innerHTML = logoSvg('b'); $('ibar').hidden = false;
 }
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; setTimeout(showInstall, 1200); });
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; if (!$('ibar').hidden) ibText(); else setTimeout(showInstall, 100); });
 window.addEventListener('appinstalled', () => { $('ibar').hidden = true; dip = null; });
-$('ib-yes').addEventListener('click', async () => { $('ibar').hidden = true; if (dip) { dip.prompt(); try { await dip.userChoice; } catch (e) {} dip = null; } });
+$('ib-yes').addEventListener('click', async () => {
+  if (dip) { const promptEvent = dip; dip = null; $('ibar').hidden = true; try { await promptEvent.prompt(); const choice = await promptEvent.userChoice; if (choice && choice.outcome === 'dismissed') { /* let the user reopen the prompt later */ } } catch (e) { toast(t('Откройте меню браузера и выберите «Установить приложение».')); } }
+  else if (isIos) { toast(t('Нажмите «Поделиться» → «На экран Домой».')); }
+  else { toast(t('Откройте меню браузера и выберите «Установить приложение».')); }
+});
 $('ib-no').addEventListener('click', () => { $('ibar').hidden = true; try { localStorage.setItem('rasp-inst', String(Date.now())); } catch (e) {} });
+$('ib-close').addEventListener('click', () => { $('ibar').hidden = true; try { localStorage.setItem('rasp-inst', String(Date.now())); } catch (e) {} });
 // Заставка
 $('splash-logo').innerHTML = logoSvg('s');
 function endSplash() {
